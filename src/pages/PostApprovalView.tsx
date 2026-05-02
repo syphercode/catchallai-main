@@ -1,0 +1,284 @@
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link, useSearchParams } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { useUser } from '@/hooks/useUser';
+import { createPageUrl } from '@/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, ShieldCheck, MessageSquare, Bell, FileText, Pencil } from 'lucide-react';
+import CalendarPostModal from '@/components/modals/CalendarPostModal';
+import ApprovalWidget from '@/components/social/approvals/ApprovalWidget';
+import { PLATFORMS } from '@/constants/platforms';
+import COPY from '@/lib/copy';
+import PostApprovalPanel from '@/components/social/PostApprovalPanel';
+import PostCommentThread from '@/components/social/approvals/PostCommentThread';
+import PostActivityFeed from '@/components/social/approvals/PostActivityFeed';
+import WorkflowStageBuilder from '@/components/social/approvals/WorkflowStageBuilder';
+import type { SocialMediaPost } from '@/types/post';
+
+export default function PostApprovalView() {
+  const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const postId = searchParams.get('id');
+  const origin = searchParams.get('origin');
+  const [rightPanel, setRightPanel] = useState('approval');
+  const [previewPlatform, setPreviewPlatform] = useState<string | null>(null);
+  // Store the inferred natural ratio alongside the URL it came from. The
+  // derived inferredRatio below resolves to null whenever imageSrc differs
+  // from the stored url — so it resets automatically on platform switch AND
+  // when a refetch/mutation changes the cropped URL for the same platform.
+  const [inferred, setInferred] = useState<{ url: string; ratio: number } | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const { user: currentUser } = useUser();
+
+  const { data: post, isLoading } = useQuery<SocialMediaPost>({
+    queryKey: ['calendar-post', postId],
+    queryFn: () => base44.entities.CalendarPost.get(postId),
+    enabled: !!postId,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      base44.entities.CalendarPost.update(postId!, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar-post', postId] });
+      queryClient.invalidateQueries({ queryKey: ['calendar-posts'] });
+    },
+  });
+
+  const handleEditSave = async (data: any) => {
+    return await updateMutation.mutateAsync(data);
+  };
+
+  // The author is the user who first submitted the post for review.
+  const authorEmail = (post?.workflow_history ?? []).find(
+    (e: any) => e.action === 'submitted_for_approval' || e.action === 'submitted_for_review'
+  )?.by_email;
+  const isAuthor = currentUser?.email === authorEmail;
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.social_media_role === 'admin';
+  const canEdit = (isAuthor || isAdmin) && post?.status !== 'published';
+
+  useEffect(() => {
+    if (post?.platforms && post.platforms.length > 0 && !previewPlatform) {
+      setPreviewPlatform(post.platforms[0]);
+    }
+  }, [post, previewPlatform]);
+
+  if (isLoading) {
+    return (
+      <div className="p-6 lg:p-8 max-w-4xl mx-auto">
+        <Skeleton className="h-5 w-40 mb-6" />
+        <Skeleton className="h-72 rounded-2xl mb-5" />
+        <Skeleton className="h-10 rounded-xl mb-5" />
+        <Skeleton className="h-64 rounded-2xl" />
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="p-6 lg:p-8 text-center text-gray-500 text-sm">
+        {COPY.postApprovalView.postNotFound}
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 lg:p-8 min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto space-y-5">
+        <div className="flex items-center justify-between">
+          <Link
+            to={
+              origin === 'composer' ? createPageUrl('SocialCalendar') : createPageUrl('AllChannels')
+            }
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {origin === 'composer'
+              ? COPY.postApprovalView.backToSocialCalendar
+              : COPY.postApprovalView.backToAllChannels}
+          </Link>
+          {canEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setShowEditModal(true)}
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              {COPY.postApprovalView.editPost}
+            </Button>
+          )}
+        </div>
+
+        {/* Post Preview — platform tabs + preview card matching create-post modal */}
+        {post.platforms &&
+          post.platforms.length > 0 &&
+          (() => {
+            const platforms = post.platforms ?? [];
+            const activePlatform = previewPlatform ?? platforms[0];
+            const platformCfg = PLATFORMS.find((p) => p.id === activePlatform) ?? PLATFORMS[0];
+            const PlatformIcon = platformCfg.icon;
+
+            return (
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                {/* Platform tabs */}
+                <div className="flex border-b border-gray-200 dark:border-gray-800">
+                  {PLATFORMS.filter((pl) => platforms.includes(pl.id)).map((pl) => (
+                    <button
+                      key={pl.id}
+                      onClick={() => setPreviewPlatform(pl.id)}
+                      className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+                        activePlatform === pl.id
+                          ? 'border-violet-500 text-violet-600 dark:text-violet-400'
+                          : 'border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                      }`}
+                    >
+                      {pl.id === 'Twitter' ? COPY.calendarPostModal.twitterDisplayName : pl.id}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Preview card header */}
+                <div className="flex items-center gap-2 px-3 py-2.5 border-b border-gray-100 dark:border-gray-700">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${platformCfg.tailwind}`}
+                  >
+                    <PlatformIcon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                      {COPY.calendarPostModal.yourAccount}
+                    </p>
+                    <p className="text-xs text-gray-400">{COPY.calendarPostModal.justNow}</p>
+                  </div>
+                </div>
+
+                {/* Media */}
+                {(() => {
+                  // Prefer the per-platform cropped URL (produced by ImageCropPanel
+                  // with crop/tilt/flip already baked in). Fall back to the raw
+                  // image_url when the post hasn't been cropped for this platform.
+                  const croppedUrl = post.platform_image_urls?.[activePlatform];
+                  const imageSrc = croppedUrl ?? post.image_url;
+                  if (!imageSrc) return null;
+                  const box = post.platform_crop_metadata?.[activePlatform]?.cropBox;
+                  const fallbackRatio = box ? box.w / box.h : platformCfg.aspectRatio;
+                  // Only trust the stored natural ratio if it belongs to the
+                  // current imageSrc. This handles both platform switches AND
+                  // same-platform URL changes from refetch/mutation.
+                  const inferredRatio =
+                    inferred && inferred.url === imageSrc ? inferred.ratio : null;
+                  return (
+                    <img
+                      src={imageSrc}
+                      alt=""
+                      className="w-full object-cover"
+                      style={{ aspectRatio: inferredRatio ?? fallbackRatio }}
+                      onLoad={(e) =>
+                        setInferred({
+                          url: imageSrc,
+                          ratio: e.currentTarget.naturalWidth / e.currentTarget.naturalHeight,
+                        })
+                      }
+                    />
+                  );
+                })()}
+                {post.video_url && !post.image_url && (
+                  <video
+                    src={post.video_url}
+                    className="w-full aspect-[1.91/1] object-cover"
+                    muted
+                  />
+                )}
+
+                {/* Caption + widget */}
+                <div className="p-3 flex items-start justify-between gap-4">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap line-clamp-6 flex-1">
+                    {post.caption || (
+                      <span className="text-gray-300 dark:text-gray-600 italic">
+                        {COPY.calendarPostModal.captionPreviewPlaceholder}
+                      </span>
+                    )}
+                  </p>
+                  <div className="shrink-0">
+                    <ApprovalWidget
+                      version={post.version ?? 0}
+                      viewsCount={
+                        new Set(
+                          (post.workflow_history || []).map((e: any) => e.by_email).filter(Boolean)
+                        ).size
+                      }
+                      approvalsCount={
+                        (post.workflow_history || []).filter((e: any) => e.action === 'approved')
+                          .length
+                      }
+                      rejectionsCount={
+                        (post.workflow_history || []).filter(
+                          (e: any) => e.action === 'rejected' || e.action === 'changes_requested'
+                        ).length
+                      }
+                      dueDate={post.review_due_date}
+                      scheduledDate={post.scheduled_date}
+                      scheduledTime={post.scheduled_time}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+        {/* Sub-tab navigation */}
+        <div className="flex gap-1 bg-gray-100 dark:bg-slate-800 rounded-xl p-1">
+          {[
+            { key: 'approval', label: COPY.calendarPostModal.approvalWorkflow, icon: ShieldCheck },
+            { key: 'comments', label: COPY.calendarPostModal.comments, icon: MessageSquare },
+            { key: 'activity', label: COPY.calendarPostModal.activity, icon: Bell },
+            { key: 'workflow', label: COPY.postApprovalView.workflow, icon: FileText },
+          ].map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => setRightPanel(key)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                rightPanel === key
+                  ? 'bg-white dark:bg-slate-900 text-violet-700 dark:text-violet-400 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Panel content */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 shadow-sm">
+          {rightPanel === 'approval' && (
+            <PostApprovalPanel
+              post={post}
+              readOnly
+              onUpdate={() => {
+                queryClient.invalidateQueries({ queryKey: ['calendar-posts-all'] });
+                queryClient.invalidateQueries({ queryKey: ['calendar-post', postId] });
+              }}
+            />
+          )}
+          {rightPanel === 'comments' && <PostCommentThread post={post} currentUser={currentUser} />}
+          {rightPanel === 'activity' && <PostActivityFeed post={post} />}
+          {rightPanel === 'workflow' && <WorkflowStageBuilder />}
+        </div>
+      </div>
+
+      {/* Edit post modal — visible to author and admins */}
+      <CalendarPostModal
+        open={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        post={post}
+        onSave={handleEditSave}
+        isLoading={updateMutation.isPending}
+      />
+    </div>
+  );
+}
