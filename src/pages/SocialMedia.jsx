@@ -1,0 +1,2540 @@
+import { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useUser } from '@/hooks/useUser';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Plus,
+  Loader2,
+  RefreshCw,
+  TrendingUp,
+  MessageSquare,
+  Heart,
+  Share2,
+  Users,
+  BarChart3,
+  Sparkles,
+  ThumbsUp,
+  ThumbsDown,
+  Minus,
+  Target,
+  Lightbulb,
+  FlaskConical,
+  Trash2,
+  Activity,
+} from 'lucide-react';
+import SocialAccountCard from '@/components/seo/SocialAccountCard';
+import ContentInsightsCard from '@/components/social/ContentInsightsCard';
+import CompetitorCard from '@/components/social/CompetitorCard';
+import ABTestCard from '@/components/social/ABTestCard';
+import TrendAnalysisCard from '@/components/social/TrendAnalysisCard';
+import CompetitorDetailModal from '@/components/social/CompetitorDetailModal';
+import CompetitorReportModal from '@/components/modals/CompetitorReportModal';
+import CompetitorNetworkMap from '@/components/social/CompetitorNetworkMap';
+import SchedulePostModal from '@/components/modals/SchedulePostModal';
+import ABTestModal from '@/components/modals/ABTestModal';
+import ComposePostModal from '@/components/modals/ComposePostModal';
+import ContentGeneratorCard from '@/components/social/ContentGeneratorCard';
+import EmptyState from '@/components/ui/EmptyState';
+import PostDetailModal from '@/components/social/PostDetailModal';
+import PredictiveTrendsCard from '@/components/social/PredictiveTrendsCard';
+import CompetitorForecastCard from '@/components/social/CompetitorForecastCard';
+import AIContentCalendarCard from '@/components/social/AIContentCalendarCard';
+import HistoricalAnalysisCard from '@/components/social/HistoricalAnalysisCard';
+import AnomalyDetectionCard from '@/components/social/AnomalyDetectionCard';
+import SmartContentAdapterCard from '@/components/social/SmartContentAdapterCard';
+import CompetitorBenchmark from '@/components/social/CompetitorBenchmark';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  FacebookIcon,
+  InstagramIcon,
+  LinkedInIcon,
+  TwitterIcon,
+  YouTubeIcon,
+} from '@/components/icons/BrandIcons';
+
+const PLATFORMS = [
+  { id: 'twitter', label: 'X (Twitter)', icon: TwitterIcon, color: 'bg-gray-900 text-white' },
+  { id: 'linkedin', label: 'LinkedIn', icon: LinkedInIcon, color: 'bg-blue-600 text-white' },
+  { id: 'facebook', label: 'Facebook', icon: FacebookIcon, color: 'bg-blue-500 text-white' },
+  {
+    id: 'instagram',
+    label: 'Instagram',
+    icon: InstagramIcon,
+    color: 'bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white',
+  },
+  { id: 'youtube', label: 'YouTube', icon: YouTubeIcon, color: 'bg-red-600 text-white' },
+];
+
+const sentimentConfig = {
+  positive: { icon: ThumbsUp, color: 'text-emerald-500', bg: 'bg-emerald-100' },
+  neutral: { icon: Minus, color: 'text-gray-500', bg: 'bg-gray-100' },
+  negative: { icon: ThumbsDown, color: 'text-red-500', bg: 'bg-red-100' },
+};
+
+export default function SocialMedia() {
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showCompetitorModal, setShowCompetitorModal] = useState(false);
+  const [showABTestModal, setShowABTestModal] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [selectedCompetitor, setSelectedCompetitor] = useState(null);
+  const [editingPost, setEditingPost] = useState(null);
+  const [editingTest, setEditingTest] = useState(null);
+  const [editingAccount, setEditingAccount] = useState(null);
+  const [newAccount, setNewAccount] = useState({
+    platform: 'twitter',
+    account_name: '',
+    account_url: '',
+  });
+  const [newCompetitor, setNewCompetitor] = useState({ name: '', website: '' });
+  const [analyzingCompetitor, setAnalyzingCompetitor] = useState(null);
+  const [analyzingAccount, setAnalyzingAccount] = useState(null);
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [generatingReport, setGeneratingReport] = useState(null);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [showComposeModal, setShowComposeModal] = useState(false);
+  const [isDiscoveringCompetitors, setIsDiscoveringCompetitors] = useState(false);
+  const [sentimentFilter, setSentimentFilter] = useState(null);
+  const [scanningNewsFor, setScanningNewsFor] = useState(null);
+  const [deepAnalyzingFor, setDeepAnalyzingFor] = useState(null);
+  const [analyzingHistory, setAnalyzingHistory] = useState(false);
+  const [detectingAnomalies, setDetectingAnomalies] = useState(false);
+  const [anomaliesData, setAnomaliesData] = useState([]);
+  const [benchmarking, setBenchmarking] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { user } = useUser();
+
+  const { data: socialAccountsRaw = [], isLoading: loadingAccounts } = useQuery({
+    queryKey: ['social-accounts'],
+    queryFn: async () => {
+      return await base44.entities.SocialAccount.list('-created_date', 50);
+    },
+    enabled: !!user,
+  });
+
+  const { data: socialPostsRaw = [] } = useQuery({
+    queryKey: ['social-posts'],
+    queryFn: async () => {
+      return await base44.entities.SocialPost.list('-created_date', 500);
+    },
+    enabled: !!user,
+  });
+
+  const { data: scheduledPostsRaw = [] } = useQuery({
+    queryKey: ['scheduled-posts'],
+    queryFn: async () => {
+      return await base44.entities.ScheduledPost.list('-created_date', 100);
+    },
+    enabled: !!user,
+  });
+
+  const { data: competitorsRaw = [] } = useQuery({
+    queryKey: ['competitors'],
+    queryFn: async () => {
+      return await base44.entities.Competitor.list('-created_date', 50);
+    },
+    enabled: !!user,
+  });
+
+  const { data: contentInsightsRaw = [] } = useQuery({
+    queryKey: ['content-insights'],
+    queryFn: async () => {
+      return await base44.entities.ContentInsight.list('-created_date', 50);
+    },
+    enabled: !!user,
+  });
+
+  const { data: abTestsRaw = [] } = useQuery({
+    queryKey: ['ab-tests'],
+    queryFn: async () => {
+      return await base44.entities.ABTest.list('-created_date', 50);
+    },
+    enabled: !!user,
+  });
+
+  const { data: competitorReportsRaw = [] } = useQuery({
+    queryKey: ['competitor-reports'],
+    queryFn: async () => {
+      return await base44.entities.CompetitorReport.list('-created_date', 100);
+    },
+    enabled: !!user,
+  });
+
+  const { data: companies = [] } = useQuery({
+    queryKey: ['companies'],
+    queryFn: async () => {
+      return await base44.entities.Company.list('-created_date', 50);
+    },
+    enabled: !!user,
+  });
+
+  // Use data directly - Base44 SDK returns normalized data
+  const socialAccounts = socialAccountsRaw || [];
+  const socialPosts = socialPostsRaw || [];
+  const scheduledPosts = scheduledPostsRaw || [];
+  const competitors = competitorsRaw || [];
+  const contentInsights = contentInsightsRaw || [];
+  const abTests = abTestsRaw || [];
+  const competitorReports = competitorReportsRaw || [];
+
+  const createAccountMutation = useMutation({
+    mutationFn: (data) => base44.entities.SocialAccount.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
+      setShowAddModal(false);
+      setNewAccount({ platform: 'twitter', account_name: '', account_url: '' });
+    },
+  });
+
+  const updateAccountMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.SocialAccount.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
+      setEditingAccount(null);
+    },
+  });
+
+  const deleteAccountMutation = useMutation({
+    mutationFn: (id) => base44.entities.SocialAccount.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
+      setEditingAccount(null);
+    },
+  });
+
+  const createScheduledPostMutation = useMutation({
+    mutationFn: (data) =>
+      editingPost
+        ? base44.entities.ScheduledPost.update(editingPost.id, data)
+        : base44.entities.ScheduledPost.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scheduled-posts'] });
+      setShowScheduleModal(false);
+      setEditingPost(null);
+    },
+  });
+
+  const bulkScheduleMutation = useMutation({
+    mutationFn: async (posts) => {
+      for (const post of posts) {
+        await base44.entities.ScheduledPost.create(post);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scheduled-posts'] });
+      setShowComposeModal(false);
+    },
+  });
+
+  const adaptContentMutation = useMutation({
+    mutationFn: async (params) => {
+      const { content, platforms, hashtags } = params;
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Adapt this social media post for each platform while keeping the core message:
+
+Original post: "${content}"
+Hashtags to include: ${hashtags.map((t) => '#' + t).join(' ')}
+
+For each platform, optimize:
+- Twitter/X: Keep under 280 chars, punchy and engaging
+- LinkedIn: Professional tone, can be longer, add industry context
+- Facebook: Conversational, engaging, can ask questions
+- Instagram: Visual-focused language, emoji-friendly, hashtag-heavy
+- YouTube: Description style, include call-to-action
+
+Return adapted content for: ${platforms.join(', ')}`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            twitter: { type: 'string' },
+            linkedin: { type: 'string' },
+            facebook: { type: 'string' },
+            instagram: { type: 'string' },
+            youtube: { type: 'string' },
+          },
+        },
+      });
+      return result;
+    },
+  });
+
+  const createCompetitorMutation = useMutation({
+    mutationFn: (data) => base44.entities.Competitor.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['competitors'] });
+      setShowCompetitorModal(false);
+      setNewCompetitor({ name: '', website: '' });
+    },
+  });
+
+  const discoverCompetitorsMutation = useMutation({
+    mutationFn: async () => {
+      setIsDiscoveringCompetitors(true);
+
+      // Build company profile from available companies
+      const companyInfo =
+        companies.length > 0
+          ? companies
+              .map((c) => `${c.name} (${c.industry || 'general'}, ${c.website || 'no website'})`)
+              .join(', ')
+          : 'General business';
+
+      const existingCompetitorNames = competitors.map((c) => c.name.toLowerCase());
+
+      const analysis = await base44.integrations.Core.InvokeLLM({
+        prompt: `Based on these company profiles: ${companyInfo}
+        
+        Find 5 real competitors in their industry/market. For each competitor provide:
+        1. Company name
+        2. Website URL
+        3. Brief description of why they're a competitor
+        
+        Focus on actual, real companies that compete in the same space.
+        ${existingCompetitorNames.length > 0 ? `Exclude these already tracked competitors: ${existingCompetitorNames.join(', ')}` : ''}`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            competitors: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  website: { type: 'string' },
+                  reason: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Create competitors that don't already exist
+      let added = 0;
+      for (const comp of analysis.competitors || []) {
+        if (!existingCompetitorNames.includes(comp.name.toLowerCase())) {
+          await base44.entities.Competitor.create({
+            name: comp.name,
+            website: comp.website,
+          });
+          added++;
+        }
+      }
+
+      return { added, total: analysis.competitors?.length || 0 };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['competitors'] });
+      setIsDiscoveringCompetitors(false);
+    },
+    onError: () => setIsDiscoveringCompetitors(false),
+  });
+
+  const analyzeCompetitorMutation = useMutation({
+    mutationFn: async (competitor) => {
+      setAnalyzingCompetitor(competitor.id);
+      const analysis = await base44.integrations.Core.InvokeLLM({
+        prompt: `Perform deep strategic analysis of ${competitor.name}'s social media presence and evolution:
+        Website: ${competitor.website || 'N/A'}
+        
+        Provide comprehensive analysis including:
+        1. Current social media accounts with follower counts and engagement rates
+        2. Top 3 strengths in their current social strategy
+        3. Top 3 weaknesses or opportunities
+        4. Their best performing content themes (last 6 months)
+        5. STRATEGY EVOLUTION: Detailed analysis of how their approach has changed over the last 5 years:
+           - 2020-2021 period: focus areas, performance, key changes
+           - 2022-2023 period: focus areas, performance, key changes
+           - 2024-2025 period: focus areas, performance, key changes
+        6. Top 3-5 successful campaigns with type, estimated reach, and key elements
+        7. Content frequency: posts per week, best posting days, and content mix percentages
+        8. Predicted next moves based on pattern analysis`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            social_accounts: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  platform: { type: 'string' },
+                  handle: { type: 'string' },
+                  followers: { type: 'number' },
+                  engagement_rate: { type: 'number' },
+                },
+              },
+            },
+            strengths: { type: 'array', items: { type: 'string' } },
+            weaknesses: { type: 'array', items: { type: 'string' } },
+            top_content: { type: 'array', items: { type: 'string' } },
+            strategy_evolution: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  period: { type: 'string' },
+                  focus: { type: 'string' },
+                  performance: { type: 'string' },
+                },
+              },
+            },
+            successful_campaigns: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  type: { type: 'string' },
+                  estimated_reach: { type: 'number' },
+                  key_elements: { type: 'array', items: { type: 'string' } },
+                },
+              },
+            },
+            content_frequency: {
+              type: 'object',
+              properties: {
+                posts_per_week: { type: 'number' },
+                best_days: { type: 'array', items: { type: 'string' } },
+                content_mix: { type: 'object' },
+              },
+            },
+          },
+        },
+      });
+
+      await base44.entities.Competitor.update(competitor.id, {
+        ...analysis,
+        last_analyzed: new Date().toISOString(),
+      });
+      return analysis;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['competitors'] });
+      setAnalyzingCompetitor(null);
+    },
+    onError: () => setAnalyzingCompetitor(null),
+  });
+
+  const generateReportMutation = useMutation({
+    mutationFn: async ({ competitor, reportType }) => {
+      setGeneratingReport(competitor.id);
+      const today = new Date();
+      const periodStart = new Date(today);
+      if (reportType === 'weekly') {
+        periodStart.setDate(today.getDate() - 7);
+      } else if (reportType === 'comparative') {
+        periodStart.setDate(today.getDate() - 30);
+      } else {
+        periodStart.setDate(today.getDate() - 1);
+      }
+
+      // Get your brand info for comparative reports
+      const yourBrandData =
+        reportType === 'comparative'
+          ? {
+              followers: socialAccounts.reduce((sum, a) => sum + (a.followers_count || 0), 0),
+              engagement_rate:
+                socialAccounts.length > 0
+                  ? socialAccounts.reduce((sum, a) => sum + (a.engagement_rate || 0), 0) /
+                    socialAccounts.length
+                  : 0,
+              posts_per_week: scheduledPosts.length > 0 ? Math.round(scheduledPosts.length / 4) : 5,
+              avg_likes:
+                socialPosts.length > 0
+                  ? Math.round(
+                      socialPosts.reduce((sum, p) => sum + (p.likes || 0), 0) / socialPosts.length
+                    )
+                  : 0,
+            }
+          : null;
+
+      const promptBase =
+        reportType === 'comparative'
+          ? `Generate a comparative analysis report between our brand and ${competitor.name}:
+          
+Our brand metrics:
+- Total followers: ${yourBrandData.followers}
+- Avg engagement rate: ${yourBrandData.engagement_rate.toFixed(2)}%
+- Posts per week: ${yourBrandData.posts_per_week}
+- Avg likes: ${yourBrandData.avg_likes}
+
+Competitor: ${competitor.name}
+Website: ${competitor.website || 'N/A'}
+Social accounts: ${JSON.stringify(competitor.social_accounts || [])}
+
+Generate a detailed comparison including:
+1. Side-by-side metrics (followers, engagement, posts/week, avg likes, sentiment)
+2. 3 areas where our brand leads
+3. 3 areas we need to improve
+4. 5 strategic opportunities based on competitor gaps
+5. Key comparison insights (3-5 points)
+6. Standard metrics and trends`
+          : `Generate a ${reportType} competitor analysis report for: ${competitor.name}
+        Website: ${competitor.website || 'N/A'}
+        Social accounts: ${JSON.stringify(competitor.social_accounts || [])}
+        Known strengths: ${(competitor.strengths || []).join(', ')}
+        Known weaknesses: ${(competitor.weaknesses || []).join(', ')}
+        
+        Generate a comprehensive report including:
+        1. Key metrics changes (follower growth %, engagement change %, posts count, avg likes/comments/shares)
+        2. Content trends - top 5 topics with frequency, engagement, and trend direction (up/down/stable)
+        3. Sentiment analysis - overall sentiment, breakdown percentages, any sentiment shift
+        4. Alerts - identify 3-5 significant changes or emerging threats with severity (critical/high/medium/low), type, title, description
+        5. Top 3 performing posts with content, platform, engagement, sentiment
+        6. 5 actionable recommendations based on their activity
+        7. Executive summary (2-3 sentences)`;
+
+      const analysis = await base44.integrations.Core.InvokeLLM({
+        prompt: promptBase,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            metrics: {
+              type: 'object',
+              properties: {
+                follower_change: { type: 'number' },
+                follower_change_percent: { type: 'number' },
+                engagement_change: { type: 'number' },
+                posts_count: { type: 'number' },
+                avg_likes: { type: 'number' },
+                avg_comments: { type: 'number' },
+                avg_shares: { type: 'number' },
+              },
+            },
+            content_trends: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  topic: { type: 'string' },
+                  frequency: { type: 'number' },
+                  engagement: { type: 'number' },
+                  trend: { type: 'string' },
+                },
+              },
+            },
+            sentiment_analysis: {
+              type: 'object',
+              properties: {
+                overall: { type: 'string' },
+                positive_percent: { type: 'number' },
+                neutral_percent: { type: 'number' },
+                negative_percent: { type: 'number' },
+                sentiment_shift: { type: 'string' },
+              },
+            },
+            alerts: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  type: { type: 'string' },
+                  severity: { type: 'string' },
+                  title: { type: 'string' },
+                  description: { type: 'string' },
+                },
+              },
+            },
+            top_posts: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  content: { type: 'string' },
+                  platform: { type: 'string' },
+                  engagement: { type: 'number' },
+                  sentiment: { type: 'string' },
+                },
+              },
+            },
+            recommendations: { type: 'array', items: { type: 'string' } },
+            summary: { type: 'string' },
+            comparative_data:
+              reportType === 'comparative'
+                ? {
+                    type: 'object',
+                    properties: {
+                      your_metrics: {
+                        type: 'object',
+                        properties: {
+                          followers: { type: 'number' },
+                          engagement_rate: { type: 'number' },
+                          posts_per_week: { type: 'number' },
+                          avg_likes: { type: 'number' },
+                          sentiment_score: { type: 'number' },
+                        },
+                      },
+                      competitor_metrics: {
+                        type: 'object',
+                        properties: {
+                          followers: { type: 'number' },
+                          engagement_rate: { type: 'number' },
+                          posts_per_week: { type: 'number' },
+                          avg_likes: { type: 'number' },
+                          sentiment_score: { type: 'number' },
+                        },
+                      },
+                      comparison_insights: { type: 'array', items: { type: 'string' } },
+                      areas_you_lead: { type: 'array', items: { type: 'string' } },
+                      areas_to_improve: { type: 'array', items: { type: 'string' } },
+                      strategic_opportunities: { type: 'array', items: { type: 'string' } },
+                    },
+                  }
+                : undefined,
+          },
+        },
+      });
+
+      const report = await base44.entities.CompetitorReport.create({
+        competitor_id: competitor.id,
+        report_type: reportType,
+        period_start: periodStart.toISOString().split('T')[0],
+        period_end: today.toISOString().split('T')[0],
+        ...analysis,
+      });
+
+      return report;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['competitor-reports'] });
+      setGeneratingReport(null);
+    },
+    onError: () => setGeneratingReport(null),
+  });
+
+  // Scan News & Press Releases
+  const scanNewsMutation = useMutation({
+    mutationFn: async (competitor) => {
+      setScanningNewsFor(competitor.id);
+
+      const analysis = await base44.integrations.Core.InvokeLLM({
+        prompt: `Search for the latest news, press releases, and media coverage about ${competitor.name} (${competitor.website || 'company'}).
+        
+Find:
+1. Recent news articles (last 30 days) - title, source, date, summary, sentiment, category
+2. Press releases and announcements - title, date, summary, key announcements, strategic implications
+3. Any significant company updates, product launches, partnerships, or industry mentions
+
+Provide 5 news articles and 3 press releases if available.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            news_mentions: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string' },
+                  source: { type: 'string' },
+                  url: { type: 'string' },
+                  date: { type: 'string' },
+                  sentiment: { type: 'string' },
+                  summary: { type: 'string' },
+                  category: { type: 'string' },
+                },
+              },
+            },
+            press_releases: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string' },
+                  date: { type: 'string' },
+                  summary: { type: 'string' },
+                  key_announcements: { type: 'array', items: { type: 'string' } },
+                  strategic_implications: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      await base44.entities.Competitor.update(competitor.id, {
+        news_mentions: analysis.news_mentions || [],
+        press_releases: analysis.press_releases || [],
+        last_news_scan: new Date().toISOString(),
+      });
+
+      return analysis;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['competitors'] });
+      setScanningNewsFor(null);
+    },
+    onError: () => setScanningNewsFor(null),
+  });
+
+  // Leadership Intelligence Scan
+  const scanLeadershipMutation = useMutation({
+    mutationFn: async (competitor) => {
+      setScanningNewsFor(competitor.id);
+
+      const analysis = await base44.integrations.Core.InvokeLLM({
+        prompt: `Research the leadership team and board of directors for ${competitor.name} (${competitor.website || 'company'}).
+
+Find and provide detailed information about:
+
+1. EXECUTIVE LEADERSHIP TEAM (CEO, CFO, CIO, COO, CMO, CTO):
+For each executive:
+- Full name and current role
+- Professional bio (150-200 words)
+- LinkedIn and Twitter profiles if available
+- Career background and previous roles
+- Tenure at the company
+- Key achievements and initiatives
+- Recent news articles about them (last 6 months) - title, source, URL, date, summary, sentiment
+
+2. BOARD OF DIRECTORS:
+For each board member:
+- Name and title
+- Background and expertise
+- Other boards they serve on
+
+3. COMPANY OVERVIEW:
+- Founded year
+- Headquarters location
+- Employee count (estimate)
+- Revenue (if public)
+- Funding rounds and total raised
+- Key investors
+- Business model
+
+Focus on recent, credible sources. Provide 3-5 news articles per executive if available.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            leadership_team: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  role: { type: 'string' },
+                  bio: { type: 'string' },
+                  linkedin: { type: 'string' },
+                  twitter: { type: 'string' },
+                  background: { type: 'string' },
+                  tenure: { type: 'string' },
+                  key_achievements: { type: 'array', items: { type: 'string' } },
+                  recent_news: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        title: { type: 'string' },
+                        source: { type: 'string' },
+                        url: { type: 'string' },
+                        date: { type: 'string' },
+                        summary: { type: 'string' },
+                        sentiment: { type: 'string' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            board_members: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  title: { type: 'string' },
+                  background: { type: 'string' },
+                  other_boards: { type: 'array', items: { type: 'string' } },
+                },
+              },
+            },
+            company_overview: {
+              type: 'object',
+              properties: {
+                founded: { type: 'string' },
+                headquarters: { type: 'string' },
+                employee_count: { type: 'string' },
+                revenue: { type: 'string' },
+                funding: { type: 'string' },
+                investors: { type: 'array', items: { type: 'string' } },
+                business_model: { type: 'string' },
+              },
+            },
+          },
+        },
+      });
+
+      await base44.entities.Competitor.update(competitor.id, {
+        leadership_team: analysis.leadership_team,
+        board_members: analysis.board_members,
+        company_overview: analysis.company_overview,
+        last_leadership_scan: new Date().toISOString(),
+      });
+
+      return analysis;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['competitors'] });
+      setScanningNewsFor(null);
+    },
+    onError: () => setScanningNewsFor(null),
+  });
+
+  // Deep AI Analysis - Content Strategy, Predictions, Benchmarks
+  const deepAnalyzeMutation = useMutation({
+    mutationFn: async (competitor) => {
+      setDeepAnalyzingFor(competitor.id);
+
+      const analysis = await base44.integrations.Core.InvokeLLM({
+        prompt: `Perform a deep strategic analysis of ${competitor.name} (${competitor.website || 'company'}) social media presence.
+
+Current known data:
+- Social accounts: ${JSON.stringify(competitor.social_accounts || [])}
+- Known strengths: ${(competitor.strengths || []).join(', ') || 'Unknown'}
+- Known content themes: ${(competitor.top_content || []).join(', ') || 'Unknown'}
+
+Analyze and provide:
+
+1. CONTENT STRATEGY ANALYSIS:
+- Primary content themes (3-5)
+- Content pillars they focus on
+- Tone of voice description
+- Visual style description
+- Top hashtag strategy (5-10 hashtags they use)
+- Common CTA patterns (3-5)
+
+2. PREDICTED UPCOMING CAMPAIGNS (next 3 months):
+For each predicted campaign, provide:
+- Campaign name/theme
+- Predicted launch timeframe
+- Type (product launch, seasonal, awareness, etc.)
+- Confidence score (0-100)
+- Detection signals (what indicates this campaign is coming)
+- Recommended response strategy
+
+3. INDUSTRY BENCHMARK SCORES:
+- Follower percentile (vs industry)
+- Engagement percentile
+- Growth rate percentile
+- Content quality score (0-100)
+- Brand strength score (0-100)
+- Industry average engagement rate
+- Industry average follower count
+
+Be specific and data-driven where possible.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            content_strategy: {
+              type: 'object',
+              properties: {
+                primary_themes: { type: 'array', items: { type: 'string' } },
+                content_pillars: { type: 'array', items: { type: 'string' } },
+                tone_of_voice: { type: 'string' },
+                visual_style: { type: 'string' },
+                hashtag_strategy: { type: 'array', items: { type: 'string' } },
+                cta_patterns: { type: 'array', items: { type: 'string' } },
+              },
+            },
+            predicted_campaigns: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  predicted_launch: { type: 'string' },
+                  type: { type: 'string' },
+                  confidence: { type: 'number' },
+                  signals: { type: 'array', items: { type: 'string' } },
+                  recommended_response: { type: 'string' },
+                },
+              },
+            },
+            industry_benchmark: {
+              type: 'object',
+              properties: {
+                follower_percentile: { type: 'number' },
+                engagement_percentile: { type: 'number' },
+                growth_rate_percentile: { type: 'number' },
+                content_quality_score: { type: 'number' },
+                brand_strength_score: { type: 'number' },
+                industry_avg_engagement: { type: 'number' },
+                industry_avg_followers: { type: 'number' },
+              },
+            },
+          },
+        },
+      });
+
+      await base44.entities.Competitor.update(competitor.id, {
+        content_strategy: analysis.content_strategy,
+        predicted_campaigns: analysis.predicted_campaigns,
+        industry_benchmark: analysis.industry_benchmark,
+        last_analyzed: new Date().toISOString(),
+      });
+
+      return analysis;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['competitors'] });
+      setDeepAnalyzingFor(null);
+    },
+    onError: () => setDeepAnalyzingFor(null),
+  });
+
+  const generateInsightsMutation = useMutation({
+    mutationFn: async (account) => {
+      const analysis = await base44.integrations.Core.InvokeLLM({
+        prompt: `Generate deep content insights for ${account.platform} account @${account.account_name}.
+        
+        Provide comprehensive analysis:
+        1. Top 5 trending topics in their niche
+        2. Best 4 posting times with day, time, and expected engagement score (0-100)
+        3. 10 recommended hashtags
+        4. 5 content ideas tailored to their audience
+        5. Brief audience insights
+        6. 3 emerging trends with growth rate percentage and predicted peak timing
+        7. 3 content types with viral potential scores (0-100) and reasoning`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            trending_topics: { type: 'array', items: { type: 'string' } },
+            optimal_times: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  day: { type: 'string' },
+                  time: { type: 'string' },
+                  engagement_score: { type: 'number' },
+                },
+              },
+            },
+            hashtag_suggestions: { type: 'array', items: { type: 'string' } },
+            content_recommendations: { type: 'array', items: { type: 'string' } },
+            audience_insights: { type: 'string' },
+            emerging_trends: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  topic: { type: 'string' },
+                  growth_rate: { type: 'number' },
+                  predicted_peak: { type: 'string' },
+                },
+              },
+            },
+            viral_predictions: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  content_type: { type: 'string' },
+                  viral_score: { type: 'number' },
+                  reasoning: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Delete old insights for this account
+      const oldInsights = contentInsights.filter((i) => i.social_account_id === account.id);
+      for (const insight of oldInsights) {
+        await base44.entities.ContentInsight.delete(insight.id);
+      }
+
+      await base44.entities.ContentInsight.create({
+        social_account_id: account.id,
+        ...analysis,
+        generated_date: new Date().toISOString(),
+      });
+      return analysis;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['content-insights'] }),
+  });
+
+  const optimizeContentMutation = useMutation({
+    mutationFn: async ({ content, platform }) => {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Optimize this ${platform} post for maximum engagement:
+        
+        Original: "${content}"
+        
+        Provide an optimized version with better hooks, calls to action, and relevant hashtags.`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            content: { type: 'string' },
+            hashtags: { type: 'array', items: { type: 'string' } },
+            improvements: { type: 'array', items: { type: 'string' } },
+          },
+        },
+      });
+      return result;
+    },
+  });
+
+  const createABTestMutation = useMutation({
+    mutationFn: (data) =>
+      editingTest
+        ? base44.entities.ABTest.update(editingTest.id, data)
+        : base44.entities.ABTest.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ab-tests'] });
+      setShowABTestModal(false);
+      setEditingTest(null);
+    },
+  });
+
+  const startABTestMutation = useMutation({
+    mutationFn: async (test) => {
+      await base44.entities.ABTest.update(test.id, {
+        status: 'running',
+        start_date: new Date().toISOString(),
+      });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ab-tests'] }),
+  });
+
+  const completeABTestMutation = useMutation({
+    mutationFn: async (test) => {
+      // Simulate results and use AI to analyze
+      const variantAEngagement = Math.floor(Math.random() * 500) + 100;
+      const variantBEngagement = Math.floor(Math.random() * 500) + 100;
+
+      const analysis = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze A/B test results:
+        Variant A: "${test.variant_a?.content}" - ${variantAEngagement} engagements
+        Variant B: "${test.variant_b?.content}" - ${variantBEngagement} engagements
+        
+        Provide insights on why one performed better and recommendations for future content.`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            insights: { type: 'string' },
+            winner: { type: 'string' },
+          },
+        },
+      });
+
+      const winner =
+        variantAEngagement > variantBEngagement
+          ? 'a'
+          : variantBEngagement > variantAEngagement
+            ? 'b'
+            : 'tie';
+
+      await base44.entities.ABTest.update(test.id, {
+        status: 'completed',
+        end_date: new Date().toISOString(),
+        variant_a: { ...test.variant_a, engagement: variantAEngagement },
+        variant_b: { ...test.variant_b, engagement: variantBEngagement },
+        winner,
+        insights: analysis.insights,
+      });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ab-tests'] }),
+  });
+
+  const generateVariantMutation = useMutation({
+    mutationFn: async ({ content, platform }) => {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Create an alternative version of this ${platform} post for A/B testing:
+        
+        Original: "${content}"
+        
+        Create a significantly different variant that tests a different approach (different hook, tone, or CTA).`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            content: { type: 'string' },
+            hashtags: { type: 'array', items: { type: 'string' } },
+          },
+        },
+      });
+      return result;
+    },
+  });
+
+  // Historical Analysis (5+ years)
+  const analyzeHistoryMutation = useMutation({
+    mutationFn: async (account) => {
+      setAnalyzingHistory(true);
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze 5+ years of historical data for ${account.platform} account @${account.account_name}.
+        
+Provide comprehensive historical analysis:
+1. Follower growth rate from 2019 to 2025
+2. Engagement trend over time (up/down/stable)
+3. Total posts analyzed
+4. Year-by-year timeline with followers and engagement_rate for each year (2019-2025)
+5. Key milestones (3-5 important events with date, event description, and impact)
+6. Executive summary of evolution
+
+Use real historical patterns for the platform and account type.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            start_year: { type: 'number' },
+            follower_growth_rate: { type: 'number' },
+            engagement_trend: { type: 'string' },
+            total_posts_analyzed: { type: 'number' },
+            timeline: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  year: { type: 'number' },
+                  followers: { type: 'number' },
+                  engagement_rate: { type: 'number' },
+                },
+              },
+            },
+            milestones: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  date: { type: 'string' },
+                  event: { type: 'string' },
+                  impact: { type: 'string' },
+                },
+              },
+            },
+            summary: { type: 'string' },
+          },
+        },
+      });
+      setAnalyzingHistory(false);
+      return result;
+    },
+    onError: () => setAnalyzingHistory(false),
+  });
+
+  // Anomaly Detection
+  const detectAnomaliesMutation = useMutation({
+    mutationFn: async () => {
+      setDetectingAnomalies(true);
+
+      const accountData = socialAccounts.map((acc) => ({
+        platform: acc.platform,
+        name: acc.account_name,
+        followers: acc.followers_count || 0,
+        engagement: acc.engagement_rate || 0,
+        posts_count: acc.posts_count || 0,
+      }));
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze these social media accounts for anomalies and unusual patterns:
+
+${JSON.stringify(accountData, null, 2)}
+
+Recent posts data available: ${socialPosts.length} posts
+
+Detect:
+1. Unusual engagement drops (>30% below baseline)
+2. Follower spikes or drops (>50% change)
+3. Sentiment shifts (sudden negative increase)
+4. Posting pattern changes (frequency anomalies)
+5. Performance outliers (posts doing unusually well/poor)
+
+For each anomaly found, provide:
+- Type (engagement_drop, follower_spike, sentiment_shift, posting_pattern)
+- Severity (low, medium, high, critical)
+- Title (short description)
+- Description (detailed explanation)
+- Detected value
+- Baseline value (what's normal)
+- Change percentage
+- Recommendation (what to do)`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            anomalies: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  type: { type: 'string' },
+                  severity: { type: 'string' },
+                  title: { type: 'string' },
+                  description: { type: 'string' },
+                  detected_value: { type: 'number' },
+                  baseline_value: { type: 'number' },
+                  change: { type: 'number' },
+                  recommendation: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      setAnomaliesData(result.anomalies || []);
+      setDetectingAnomalies(false);
+      return result;
+    },
+    onError: () => setDetectingAnomalies(false),
+  });
+
+  // Competitor Benchmarking
+  const benchmarkCompetitorsMutation = useMutation({
+    mutationFn: async ({ competitors, yourAccounts }) => {
+      setBenchmarking(true);
+
+      const competitorData = competitors.map((c) => ({
+        name: c.name,
+        followers: c.social_accounts?.reduce((sum, a) => sum + (a.followers || 0), 0) || 0,
+        engagement_rate:
+          c.social_accounts?.length > 0
+            ? c.social_accounts.reduce((sum, a) => sum + (a.engagement_rate || 0), 0) /
+              c.social_accounts.length
+            : 0,
+        posts_per_week: c.content_frequency?.posts_per_week || 0,
+        strengths: c.strengths || [],
+        weaknesses: c.weaknesses || [],
+      }));
+
+      const yourData = {
+        name: 'Your Brand',
+        followers: yourAccounts.reduce((sum, a) => sum + (a.followers_count || 0), 0),
+        engagement_rate:
+          yourAccounts.length > 0
+            ? yourAccounts.reduce((sum, a) => sum + (a.engagement_rate || 0), 0) /
+              yourAccounts.length
+            : 0,
+        posts_per_week: scheduledPosts.length > 0 ? Math.round(scheduledPosts.length / 4) : 0,
+      };
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Perform a comprehensive competitive benchmarking analysis:
+
+Your Brand Data:
+${JSON.stringify(yourData, null, 2)}
+
+Competitors:
+${JSON.stringify(competitorData, null, 2)}
+
+Provide a detailed competitive analysis with:
+
+1. Executive Summary: Overall competitive landscape (2-3 sentences)
+
+2. Your Market Position: Where you stand relative to competitors (1-2 sentences)
+
+3. Competitive Advantages (3-5 areas where you lead):
+For each:
+- Area/metric name
+- Specific insight explaining the advantage
+- Supporting data (key metrics)
+
+4. Competitive Disadvantages (3-5 areas needing improvement):
+For each:
+- Area/metric name
+- Specific insight explaining the gap
+- Size of the gap (quantified if possible)
+- Current leader in this area
+
+5. Strategic Recommendations (4-6 actionable strategies):
+For each:
+- Title (concise action)
+- Description (detailed explanation)
+- Priority (high/medium/low)
+- Expected impact
+
+Be specific, data-driven, and actionable.`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            executive_summary: { type: 'string' },
+            market_position: { type: 'string' },
+            competitive_advantages: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  area: { type: 'string' },
+                  insight: { type: 'string' },
+                  data: { type: 'object' },
+                },
+              },
+            },
+            competitive_disadvantages: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  area: { type: 'string' },
+                  insight: { type: 'string' },
+                  gap: { type: 'string' },
+                  leader: { type: 'string' },
+                },
+              },
+            },
+            strategic_recommendations: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string' },
+                  description: { type: 'string' },
+                  priority: { type: 'string' },
+                  expected_impact: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      setBenchmarking(false);
+      return result;
+    },
+    onError: () => setBenchmarking(false),
+  });
+
+  // Smart content adapter with audience targeting
+  const smartAdaptMutation = useMutation({
+    mutationFn: async ({ content, platforms: _platforms, audience, tone }) => {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Adapt this content for different platforms and a ${audience} audience with a ${tone} tone:
+
+Original: "${content}"
+
+For each platform, create highly optimized versions:
+- Twitter/X: 280 chars max, punchy, engaging hooks
+- LinkedIn: Professional, thought leadership, 1-3 paragraphs, add industry context
+- Facebook: Conversational, community-focused, questions encouraged
+- Instagram: Visual language, emoji-rich, hashtag-optimized, storytelling
+- YouTube: Description style, SEO keywords, strong CTA, timestamps if relevant
+
+Also provide platform-specific insights explaining the adaptation choices.
+
+Target audience: ${audience}
+Tone: ${tone}`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            twitter: { type: 'string' },
+            linkedin: { type: 'string' },
+            facebook: { type: 'string' },
+            instagram: { type: 'string' },
+            youtube: { type: 'string' },
+            insights: {
+              type: 'object',
+              properties: {
+                twitter: { type: 'string' },
+                linkedin: { type: 'string' },
+                facebook: { type: 'string' },
+                instagram: { type: 'string' },
+                youtube: { type: 'string' },
+              },
+            },
+          },
+        },
+      });
+      return result;
+    },
+  });
+
+  const generateContentMutation = useMutation({
+    mutationFn: async ({
+      contentType,
+      platform,
+      tone,
+      topic,
+      trendingTopics,
+      emergingTrends,
+      competitorInsights,
+      winningContent,
+    }) => {
+      const contextInfo = `
+        Trending topics: ${trendingTopics.join(', ') || 'None'}
+        Emerging trends: ${emergingTrends.join(', ') || 'None'}
+        Competitor content themes: ${competitorInsights.join(', ') || 'None'}
+        Winning A/B test content examples: ${winningContent.join(' | ') || 'None'}
+      `;
+
+      if (contentType === 'social_post') {
+        return await base44.integrations.Core.InvokeLLM({
+          prompt: `Generate an engaging ${platform} post with a ${tone} tone.
+          ${topic ? `Topic: ${topic}` : 'Use trending topics for inspiration.'}
+          
+          Context from analytics:
+          ${contextInfo}
+          
+          Create content optimized for ${platform} engagement.`,
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              content: { type: 'string' },
+              hashtags: { type: 'array', items: { type: 'string' } },
+            },
+          },
+        });
+      }
+
+      if (contentType === 'email_campaign') {
+        return await base44.integrations.Core.InvokeLLM({
+          prompt: `Generate email campaign copy with a ${tone} tone.
+          ${topic ? `Topic: ${topic}` : 'Use trending topics for inspiration.'}
+          
+          Context from analytics:
+          ${contextInfo}
+          
+          Create compelling email content with subject line, preview text, body, and CTA.`,
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              subject: { type: 'string' },
+              preview: { type: 'string' },
+              content: { type: 'string' },
+              cta: { type: 'string' },
+            },
+          },
+        });
+      }
+
+      if (contentType === 'blog_outline') {
+        return await base44.integrations.Core.InvokeLLM({
+          prompt: `Generate a blog post outline with a ${tone} tone.
+          ${topic ? `Topic: ${topic}` : 'Use trending topics for inspiration.'}
+          
+          Context from analytics:
+          ${contextInfo}
+          
+          Create a comprehensive blog outline with title, sections, and SEO keywords.`,
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              title: { type: 'string' },
+              outline: { type: 'array', items: { type: 'string' } },
+              keywords: { type: 'array', items: { type: 'string' } },
+            },
+          },
+        });
+      }
+    },
+  });
+
+  const analyzeAccountMutation = useMutation({
+    mutationFn: async (account) => {
+      setAnalyzingAccount(account.id);
+
+      let analysis;
+
+      // Use real API for Twitter
+      if (account.platform === 'twitter') {
+        try {
+          const result = await base44.functions.invoke('fetchTwitterData', {
+            username: account.account_name,
+          });
+
+          if (result.data.error) {
+            throw new Error(result.data.error);
+          }
+
+          analysis = result.data;
+        } catch (error) {
+          // Fallback to AI if API fails
+          console.error('Twitter API failed, using AI fallback:', error);
+          const platformName = 'X (Twitter)';
+          analysis = await base44.integrations.Core.InvokeLLM({
+            prompt: `Search for the ${platformName} account "${account.account_name}".
+            ${account.account_url ? `URL: ${account.account_url}` : ''}
+
+Find: followers_count, engagement_rate, total_posts.
+Find 5 recent posts with: post_url (direct link to post), content, post_date, likes, comments, shares, views, sentiment, topics (array of 3 keywords).`,
+            add_context_from_internet: true,
+            response_json_schema: {
+              type: 'object',
+              properties: {
+                followers_count: { type: 'number' },
+                engagement_rate: { type: 'number' },
+                total_posts: { type: 'number' },
+                posts: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      post_url: { type: 'string' },
+                      content: { type: 'string' },
+                      post_date: { type: 'string' },
+                      likes: { type: 'number' },
+                      comments: { type: 'number' },
+                      shares: { type: 'number' },
+                      views: { type: 'number' },
+                      sentiment: { type: 'string' },
+                      topics: { type: 'array', items: { type: 'string' } },
+                    },
+                  },
+                },
+              },
+            },
+          });
+        }
+      } else {
+        // Use AI for other platforms for now
+        const platformName = account.platform === 'twitter' ? 'X (Twitter)' : account.platform;
+        analysis = await base44.integrations.Core.InvokeLLM({
+          prompt: `Search for the ${platformName} account "${account.account_name}".
+          ${account.account_url ? `URL: ${account.account_url}` : ''}
+
+Find: followers_count, engagement_rate, total_posts.
+Find 5 recent posts with: post_url (direct link to post), content, post_date, likes, comments, shares, views, sentiment, topics (array of 3 keywords).`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              followers_count: { type: 'number' },
+              engagement_rate: { type: 'number' },
+              total_posts: { type: 'number' },
+              posts: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    post_url: { type: 'string' },
+                    content: { type: 'string' },
+                    post_date: { type: 'string' },
+                    likes: { type: 'number' },
+                    comments: { type: 'number' },
+                    shares: { type: 'number' },
+                    views: { type: 'number' },
+                    sentiment: { type: 'string' },
+                    topics: { type: 'array', items: { type: 'string' } },
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // Build update data - preserve existing values if AI returns 0
+      const updateData = {
+        last_analyzed: new Date().toISOString(),
+      };
+
+      // Only update followers if AI returned a real number > 0
+      if (analysis.followers_count && analysis.followers_count > 0) {
+        updateData.followers_count = analysis.followers_count;
+      }
+
+      // Only update engagement if AI returned a real number > 0
+      if (analysis.engagement_rate && analysis.engagement_rate > 0) {
+        updateData.engagement_rate = analysis.engagement_rate;
+      }
+
+      // Only update posts count if AI returned a real number > 0
+      if (analysis.total_posts && analysis.total_posts > 0) {
+        updateData.posts_count = analysis.total_posts;
+      }
+
+      await base44.entities.SocialAccount.update(account.id, updateData);
+
+      // Only update posts if we got new posts from analysis
+      if (analysis.posts && analysis.posts.length > 0) {
+        // Get current posts from the database (fresh fetch)
+        const currentPosts = await base44.entities.SocialPost.filter({
+          social_account_id: account.id,
+        });
+
+        // Clear old posts for this account
+        for (const post of currentPosts) {
+          await base44.entities.SocialPost.delete(post.id);
+        }
+
+        // Save analyzed posts with full data including post_id
+        for (const post of analysis.posts) {
+          const postId = post.post_url
+            ? post.post_url.split('/').pop()
+            : `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+          await base44.entities.SocialPost.create({
+            social_account_id: account.id,
+            platform: account.platform,
+            post_id: postId,
+            post_url: post.post_url || '',
+            content: post.content,
+            post_date: post.post_date
+              ? new Date(post.post_date).toISOString()
+              : new Date().toISOString(),
+            likes: post.likes || 0,
+            comments: post.comments || 0,
+            shares: post.shares || 0,
+            views: post.views || 0,
+            sentiment: post.sentiment || 'neutral',
+            topics: post.topics || [],
+            engagement_rate: analysis.engagement_rate || 0,
+            hashtags: post.hashtags || [],
+          });
+        }
+      }
+
+      return analysis;
+    },
+    onSuccess: (analysis, account) => {
+      queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+      setAnalyzingAccount(null);
+      // Refresh selected account with latest data
+      if (selectedAccount?.id === account.id) {
+        base44.entities.SocialAccount.filter({ id: account.id }).then((accounts) => {
+          if (accounts.length > 0) {
+            setSelectedAccount(accounts[0]);
+          }
+        });
+      }
+    },
+    onError: () => {
+      setAnalyzingAccount(null);
+    },
+  });
+
+  const getAccountPosts = (accountId) => {
+    if (!accountId) {
+      return [];
+    }
+    return socialPosts.filter((p) => p.social_account_id === accountId);
+  };
+  const getAccountInsights = (accountId) =>
+    contentInsights.find((i) => i.social_account_id === accountId);
+
+  // Calculate totals - use posts_count from accounts if available, otherwise count from socialPosts
+  const totalFollowers = socialAccounts.reduce((sum, a) => sum + (a.followers_count || 0), 0);
+  const avgEngagement =
+    socialAccounts.length > 0
+      ? (
+          socialAccounts.reduce((sum, a) => sum + (a.engagement_rate || 0), 0) /
+          socialAccounts.length
+        ).toFixed(2)
+      : 0;
+
+  // Total posts: sum of posts_count from accounts (stored value) as primary, or count analyzed posts
+  const totalPostsFromAccounts = socialAccounts.reduce((sum, a) => sum + (a.posts_count || 0), 0);
+  const totalPosts = totalPostsFromAccounts > 0 ? totalPostsFromAccounts : socialPosts.length;
+
+  const sentimentBreakdown = {
+    positive: socialPosts.filter((p) => p.sentiment === 'positive').length,
+    neutral: socialPosts.filter((p) => p.sentiment === 'neutral').length,
+    negative: socialPosts.filter((p) => p.sentiment === 'negative').length,
+  };
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 min-h-screen">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            Social Media Analysis
+          </h1>
+          <p className="text-sm sm:text-base text-gray-500 mt-1">
+            Monitor and analyze your social media presence
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              for (const account of socialAccounts) {
+                await analyzeAccountMutation.mutateAsync(account);
+              }
+            }}
+            disabled={analyzingAccount !== null || socialAccounts.length === 0}
+            className="gap-2"
+            size="sm"
+          >
+            {analyzingAccount !== null ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            <span className="hidden sm:inline">Refresh All</span>
+          </Button>
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="gap-2 bg-violet-600 hover:bg-violet-700 flex-1 sm:flex-none"
+            size="sm"
+          >
+            <Plus className="w-4 h-4" />
+            Add Account
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="glass-card rounded-2xl">
+          <CardContent className="p-4 text-center">
+            <Users className="w-6 h-6 text-violet-500 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-gray-900">
+              {totalFollowers >= 1000 ? `${(totalFollowers / 1000).toFixed(1)}K` : totalFollowers}
+            </p>
+            <p className="text-sm text-gray-500">Total Followers</p>
+          </CardContent>
+        </Card>
+        <Card className="glass-card rounded-2xl">
+          <CardContent className="p-4 text-center">
+            <TrendingUp className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-emerald-600">{avgEngagement}%</p>
+            <p className="text-sm text-gray-500">Avg Engagement</p>
+          </CardContent>
+        </Card>
+        <Card className="glass-card rounded-2xl">
+          <CardContent className="p-4 text-center">
+            <MessageSquare className="w-6 h-6 text-blue-500 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-gray-900">{totalPosts}</p>
+            <p className="text-sm text-gray-500">Posts Analyzed</p>
+          </CardContent>
+        </Card>
+        <Card className="glass-card rounded-2xl">
+          <CardContent className="p-4 text-center">
+            <BarChart3 className="w-6 h-6 text-amber-500 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-gray-900">{socialAccounts.length}</p>
+            <p className="text-sm text-gray-500">Accounts</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tabs Content */}
+      <Tabs defaultValue="accounts" className="space-y-4">
+        <div className="flex items-center justify-between overflow-x-auto">
+          <TabsList className="flex-wrap h-auto gap-1 p-1">
+            <TabsTrigger value="accounts" className="text-xs sm:text-sm">
+              Accounts
+            </TabsTrigger>
+            <TabsTrigger value="insights" className="text-xs sm:text-sm">
+              AI Insights
+            </TabsTrigger>
+            <TabsTrigger value="predictions" className="text-xs sm:text-sm">
+              Predictions
+            </TabsTrigger>
+            <TabsTrigger value="generator" className="text-xs sm:text-sm">
+              Content
+            </TabsTrigger>
+            <TabsTrigger value="competitors" className="text-xs sm:text-sm">
+              Competitors
+            </TabsTrigger>
+            <TabsTrigger value="abtests" className="text-xs sm:text-sm">
+              A/B Tests
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        {/* Accounts Tab */}
+        <TabsContent value="accounts" className="space-y-4">
+          {/* Sentiment Overview */}
+          {totalPosts > 0 && (
+            <Card className="glass-card rounded-2xl">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-lg">Content Sentiment</CardTitle>
+                {sentimentFilter && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSentimentFilter(null)}
+                    className="text-xs"
+                  >
+                    Clear Filter
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-4">
+                  {Object.entries(sentimentBreakdown).map(([sentiment, count]) => {
+                    const config = sentimentConfig[sentiment];
+                    const percentage = totalPosts > 0 ? ((count / totalPosts) * 100).toFixed(0) : 0;
+                    const isActive = sentimentFilter === sentiment;
+                    return (
+                      <div
+                        key={sentiment}
+                        className={`flex-1 p-4 rounded-xl cursor-pointer transition-all ${config.bg} ${isActive ? 'ring-2 ring-offset-2 ring-violet-500' : 'hover:scale-[1.02]'}`}
+                        onClick={() => setSentimentFilter(isActive ? null : sentiment)}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <config.icon className={`w-5 h-5 ${config.color}`} />
+                          <span className="font-medium capitalize">{sentiment}</span>
+                        </div>
+                        <p className="text-2xl font-bold">{count}</p>
+                        <p className="text-sm text-gray-500">{percentage}% of posts</p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Filtered Posts */}
+                {sentimentFilter && (
+                  <div className="mt-6 space-y-3">
+                    <h4 className="font-medium text-gray-700 dark:text-gray-300 capitalize">
+                      {sentimentFilter} Posts
+                    </h4>
+                    <div className="grid gap-3 max-h-[300px] overflow-y-auto">
+                      {socialPosts
+                        .filter((p) => p.sentiment === sentimentFilter)
+                        .map((post) => {
+                          const config = sentimentConfig[post.sentiment] || sentimentConfig.neutral;
+                          return (
+                            <Card
+                              key={post.id}
+                              className="p-3 border-0 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                              onClick={() => setSelectedPost(post)}
+                            >
+                              <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-2">
+                                {post.content}
+                              </p>
+                              <div className="flex items-center justify-between text-xs text-gray-500">
+                                <div className="flex gap-3">
+                                  <span className="flex items-center gap-1">
+                                    <Heart className="w-3 h-3" /> {post.likes || 0}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <MessageSquare className="w-3 h-3" /> {post.comments || 0}
+                                  </span>
+                                </div>
+                                <Badge className={`${config.bg} ${config.color} border-0 text-xs`}>
+                                  {post.sentiment}
+                                </Badge>
+                              </div>
+                            </Card>
+                          );
+                        })}
+                      {socialPosts.filter((p) => p.sentiment === sentimentFilter).length === 0 && (
+                        <p className="text-sm text-gray-400 text-center py-4">
+                          No {sentimentFilter} posts found
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {loadingAccounts ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} className="h-48 rounded-xl" />
+              ))}
+            </div>
+          ) : socialAccounts.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="No social accounts"
+              description="Add your social media accounts to analyze your presence and content performance."
+              actionLabel="Add Account"
+              onAction={() => setShowAddModal(true)}
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {socialAccounts.map((account) => (
+                <SocialAccountCard
+                  key={account.id}
+                  account={account}
+                  postsCount={getAccountPosts(account.id).length}
+                  onClick={() => setSelectedAccount(account)}
+                  onEdit={(acc) => setEditingAccount(acc)}
+                  onAnalyze={(acc) => analyzeAccountMutation.mutate(acc)}
+                  isAnalyzing={analyzingAccount === account.id}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* AI Predictions Tab */}
+        <TabsContent value="predictions" className="space-y-4">
+          <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <HistoricalAnalysisCard
+                account={socialAccounts[0]}
+                onAnalyzeHistory={async (acc) => {
+                  const result = await analyzeHistoryMutation.mutateAsync(acc);
+                  return result;
+                }}
+                isAnalyzing={analyzingHistory}
+              />
+              <div className="space-y-4">
+                <Button
+                  onClick={() => detectAnomaliesMutation.mutate()}
+                  disabled={detectingAnomalies || socialAccounts.length === 0}
+                  className="w-full bg-orange-600 hover:bg-orange-700"
+                >
+                  {detectingAnomalies ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Detecting...
+                    </>
+                  ) : (
+                    <>
+                      <Activity className="w-4 h-4 mr-2" /> Detect Anomalies
+                    </>
+                  )}
+                </Button>
+                <AnomalyDetectionCard anomalies={anomaliesData} />
+              </div>
+            </div>
+            <SmartContentAdapterCard
+              onAdapt={async (params) => {
+                const result = await smartAdaptMutation.mutateAsync(params);
+                return result;
+              }}
+              isAdapting={smartAdaptMutation.isPending}
+            />
+            <PredictiveTrendsCard socialAccounts={socialAccounts} posts={socialPosts} />
+            <CompetitorForecastCard competitors={competitors} yourAccounts={socialAccounts} />
+            <AIContentCalendarCard socialAccounts={socialAccounts} posts={socialPosts} />
+          </div>
+        </TabsContent>
+
+        {/* AI Insights Tab */}
+        <TabsContent value="insights" className="space-y-4">
+          {socialAccounts.length === 0 ? (
+            <EmptyState
+              icon={Lightbulb}
+              title="Add accounts first"
+              description="Add social media accounts to generate AI-powered insights."
+            />
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-900">Select Account</h3>
+                {socialAccounts.map((account) => (
+                  <Card
+                    key={account.id}
+                    className={`p-3 border-0 shadow-sm cursor-pointer transition-all ${
+                      selectedAccount?.id === account.id
+                        ? 'ring-2 ring-violet-500'
+                        : 'hover:shadow-md'
+                    }`}
+                    onClick={() => setSelectedAccount(account)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-violet-100 text-violet-700 border-0">
+                          {account.platform}
+                        </Badge>
+                        <span className="font-medium">@{account.account_name}</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          generateInsightsMutation.mutate(account);
+                        }}
+                        disabled={generateInsightsMutation.isPending}
+                        className="gap-1"
+                      >
+                        {generateInsightsMutation.isPending ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Sparkles className="w-3 h-3" />
+                        )}
+                        Generate
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+              <div className="lg:col-span-2 space-y-4">
+                {selectedAccount ? (
+                  <>
+                    <ContentInsightsCard insights={getAccountInsights(selectedAccount.id)} />
+                    <TrendAnalysisCard insights={getAccountInsights(selectedAccount.id)} />
+                  </>
+                ) : (
+                  <Card className="border-0 shadow-sm p-8 text-center">
+                    <Lightbulb className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500">Select an account and generate insights</p>
+                  </Card>
+                )}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Content Generator Tab */}
+        <TabsContent value="generator" className="space-y-4">
+          <ContentGeneratorCard
+            insights={contentInsights}
+            competitors={competitors}
+            abTests={abTests}
+            onGenerate={async (params) => {
+              const result = await generateContentMutation.mutateAsync(params);
+              return result;
+            }}
+            isGenerating={generateContentMutation.isPending}
+            onSchedulePost={(_data) => {
+              setEditingPost(null);
+              setShowScheduleModal(true);
+              // Pre-fill will happen through the modal
+            }}
+          />
+        </TabsContent>
+
+        {/* Competitors Tab */}
+        <TabsContent value="competitors" className="space-y-4">
+          <Tabs defaultValue="individual" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="individual">Individual Analysis</TabsTrigger>
+              <TabsTrigger value="benchmark">Multi-Competitor Benchmark</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="individual" className="space-y-4">
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => discoverCompetitorsMutation.mutate()}
+                  disabled={isDiscoveringCompetitors}
+                  className="gap-2"
+                >
+                  {isDiscoveringCompetitors ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  {isDiscoveringCompetitors ? 'Discovering...' : 'Auto-Discover'}
+                </Button>
+                <Button
+                  onClick={() => setShowCompetitorModal(true)}
+                  className="gap-2 bg-violet-600 hover:bg-violet-700"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Competitor
+                </Button>
+              </div>
+
+              {competitors.length === 0 ? (
+                <EmptyState
+                  icon={Target}
+                  title="No competitors tracked"
+                  description="Add competitors to benchmark your social media performance."
+                  actionLabel="Add Competitor"
+                  onAction={() => setShowCompetitorModal(true)}
+                />
+              ) : (
+                <>
+                  <CompetitorNetworkMap
+                    competitors={competitors}
+                    onSelectCompetitor={(comp) => setSelectedCompetitor(comp)}
+                    socialAccounts={socialAccounts}
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {competitors.map((competitor) => (
+                      <CompetitorCard
+                        key={competitor.id}
+                        competitor={competitor}
+                        onAnalyze={() => analyzeCompetitorMutation.mutate(competitor)}
+                        isAnalyzing={analyzingCompetitor === competitor.id}
+                        onView={() => setSelectedCompetitor(competitor)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </TabsContent>
+
+            <TabsContent value="benchmark" className="space-y-4">
+              <CompetitorBenchmark
+                competitors={competitors}
+                yourAccounts={socialAccounts}
+                onAnalyze={async (selected, accounts) => {
+                  const result = await benchmarkCompetitorsMutation.mutateAsync({
+                    competitors: selected,
+                    yourAccounts: accounts,
+                  });
+                  return result;
+                }}
+                isAnalyzing={benchmarking}
+              />
+            </TabsContent>
+          </Tabs>
+
+          {/* Competitor Detail Modal */}
+          <CompetitorDetailModal
+            open={!!selectedCompetitor}
+            onClose={() => setSelectedCompetitor(null)}
+            competitor={selectedCompetitor}
+            reports={competitorReports.filter((r) => r.competitor_id === selectedCompetitor?.id)}
+            onGenerateReport={(type) =>
+              generateReportMutation.mutate({ competitor: selectedCompetitor, reportType: type })
+            }
+            isGenerating={generatingReport === selectedCompetitor?.id}
+            onViewReport={(report) => {
+              setSelectedCompetitor(null);
+              setSelectedReport(report);
+            }}
+            onScanNews={() => scanNewsMutation.mutate(selectedCompetitor)}
+            isScanningNews={scanningNewsFor === selectedCompetitor?.id}
+            onDeepAnalyze={() => deepAnalyzeMutation.mutate(selectedCompetitor)}
+            isDeepAnalyzing={deepAnalyzingFor === selectedCompetitor?.id}
+            onScanLeadership={() => scanLeadershipMutation.mutate(selectedCompetitor)}
+            isScanningLeadership={scanningNewsFor === selectedCompetitor?.id}
+            yourBrandName={companies[0]?.name || 'Your Brand'}
+          />
+        </TabsContent>
+
+        {/* A/B Tests Tab */}
+        <TabsContent value="abtests" className="space-y-4">
+          <div className="flex justify-end">
+            <Button
+              onClick={() => {
+                setEditingTest(null);
+                setShowABTestModal(true);
+              }}
+              className="gap-2 bg-violet-600 hover:bg-violet-700"
+            >
+              <Plus className="w-4 h-4" />
+              Create A/B Test
+            </Button>
+          </div>
+
+          {abTests.length === 0 ? (
+            <EmptyState
+              icon={FlaskConical}
+              title="No A/B tests"
+              description="Create A/B tests to optimize your social media content for better engagement."
+              actionLabel="Create Test"
+              onAction={() => {
+                setEditingTest(null);
+                setShowABTestModal(true);
+              }}
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {abTests.map((test) => (
+                <ABTestCard
+                  key={test.id}
+                  test={test}
+                  onStart={(t) => startABTestMutation.mutate(t)}
+                  onComplete={(t) => completeABTestMutation.mutate(t)}
+                  onClick={() => {
+                    setEditingTest(test);
+                    setShowABTestModal(true);
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Add Account Modal */}
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Social Account</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Platform</Label>
+              <Select
+                value={newAccount.platform}
+                onValueChange={(value) => setNewAccount({ ...newAccount, platform: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PLATFORMS.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="inline-flex items-center gap-2">
+                        <p.icon className="w-4 h-4" />
+                        {p.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Account Username</Label>
+              <Input
+                value={newAccount.account_name}
+                onChange={(e) => setNewAccount({ ...newAccount, account_name: e.target.value })}
+                placeholder="e.g., syberjet"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Profile URL (optional)</Label>
+              <Input
+                value={newAccount.account_url}
+                onChange={(e) => setNewAccount({ ...newAccount, account_url: e.target.value })}
+                placeholder="https://twitter.com/syberjet"
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button variant="outline" onClick={() => setShowAddModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => createAccountMutation.mutate(newAccount)}
+                disabled={!newAccount.account_name || createAccountMutation.isPending}
+              >
+                {createAccountMutation.isPending && (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                )}
+                Add Account
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Account Modal */}
+      <Dialog open={!!editingAccount} onOpenChange={() => setEditingAccount(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Social Account</DialogTitle>
+          </DialogHeader>
+          {editingAccount && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Platform</Label>
+                <Select
+                  value={editingAccount.platform}
+                  onValueChange={(value) =>
+                    setEditingAccount({ ...editingAccount, platform: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PLATFORMS.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        <span className="inline-flex items-center gap-2">
+                          <p.icon className="w-4 h-4" />
+                          {p.label}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Account Username</Label>
+                <Input
+                  value={editingAccount.account_name}
+                  onChange={(e) =>
+                    setEditingAccount({ ...editingAccount, account_name: e.target.value })
+                  }
+                  placeholder="e.g., syberjet"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Profile URL (optional)</Label>
+                <Input
+                  value={editingAccount.account_url || ''}
+                  onChange={(e) =>
+                    setEditingAccount({ ...editingAccount, account_url: e.target.value })
+                  }
+                  placeholder="https://twitter.com/syberjet"
+                />
+              </div>
+              <div className="flex justify-between pt-4">
+                <Button
+                  variant="destructive"
+                  onClick={() => deleteAccountMutation.mutate(editingAccount.id)}
+                  disabled={deleteAccountMutation.isPending}
+                >
+                  {deleteAccountMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4 mr-2" />
+                  )}
+                  Delete
+                </Button>
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={() => setEditingAccount(null)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      updateAccountMutation.mutate({
+                        id: editingAccount.id,
+                        data: {
+                          platform: editingAccount.platform,
+                          account_name: editingAccount.account_name,
+                          account_url: editingAccount.account_url,
+                        },
+                      })
+                    }
+                    disabled={!editingAccount.account_name || updateAccountMutation.isPending}
+                  >
+                    {updateAccountMutation.isPending && (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    )}
+                    Save Changes
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Account Detail Modal */}
+      <Dialog open={!!selectedAccount} onOpenChange={() => setSelectedAccount(null)}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {selectedAccount?.platform &&
+                  (() => {
+                    const PlatformIcon = PLATFORMS.find(
+                      (p) => p.id === selectedAccount.platform
+                    )?.icon;
+                    return PlatformIcon ? <PlatformIcon className="w-5 h-5" /> : null;
+                  })()}
+                @{selectedAccount?.account_name}
+              </div>
+              {selectedAccount && (
+                <Button
+                  size="sm"
+                  onClick={() => analyzeAccountMutation.mutate(selectedAccount)}
+                  disabled={analyzingAccount === selectedAccount?.id}
+                  className="gap-2 bg-violet-600 hover:bg-violet-700"
+                >
+                  {analyzingAccount === selectedAccount?.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  {analyzingAccount === selectedAccount?.id ? 'Analyzing...' : 'Analyze'}
+                </Button>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto space-y-4">
+            {/* Account Stats */}
+            {selectedAccount && (
+              <div className="grid grid-cols-3 gap-3">
+                <Card className="p-3 text-center border-0 bg-violet-50">
+                  <p className="text-lg font-bold text-violet-600">
+                    {selectedAccount.followers_count >= 1000000
+                      ? `${(selectedAccount.followers_count / 1000000).toFixed(1)}M`
+                      : selectedAccount.followers_count >= 1000
+                        ? `${(selectedAccount.followers_count / 1000).toFixed(1)}K`
+                        : selectedAccount.followers_count || 0}
+                  </p>
+                  <p className="text-xs text-gray-500">Followers</p>
+                </Card>
+                <Card className="p-3 text-center border-0 bg-emerald-50">
+                  <p className="text-lg font-bold text-emerald-600">
+                    {selectedAccount.engagement_rate?.toFixed(2) || 0}%
+                  </p>
+                  <p className="text-xs text-gray-500">Engagement</p>
+                </Card>
+                <Card className="p-3 text-center border-0 bg-blue-50">
+                  <p className="text-lg font-bold text-blue-600">
+                    {selectedAccount.posts_count || getAccountPosts(selectedAccount.id).length}
+                  </p>
+                  <p className="text-xs text-gray-500">Posts Analyzed</p>
+                </Card>
+              </div>
+            )}
+
+            {/* Account Posts */}
+            <div>
+              <h4 className="font-medium text-gray-900 mb-3">Analyzed Posts</h4>
+              <p className="text-xs text-gray-500 mb-3">
+                {selectedAccount?.last_analyzed
+                  ? `Last analyzed: ${new Date(selectedAccount.last_analyzed).toLocaleString()}`
+                  : 'Not analyzed yet'}
+              </p>
+              {getAccountPosts(selectedAccount?.id).length > 0 ? (
+                <div className="space-y-3">
+                  {getAccountPosts(selectedAccount?.id).map((post) => {
+                    const sentiment = sentimentConfig[post.sentiment] || sentimentConfig.neutral;
+                    return (
+                      <Card
+                        key={post.id}
+                        className="p-4 border-0 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                        onClick={() => {
+                          setSelectedAccount(null);
+                          setSelectedPost(post);
+                        }}
+                      >
+                        <p className="text-sm text-gray-700 mb-3 line-clamp-3">{post.content}</p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex gap-4 text-sm text-gray-500">
+                            <span className="flex items-center gap-1">
+                              <Heart className="w-4 h-4" /> {(post.likes || 0).toLocaleString()}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MessageSquare className="w-4 h-4" />{' '}
+                              {(post.comments || 0).toLocaleString()}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Share2 className="w-4 h-4" /> {(post.shares || 0).toLocaleString()}
+                            </span>
+                          </div>
+                          <Badge className={`${sentiment.bg} ${sentiment.color} border-0`}>
+                            {post.sentiment}
+                          </Badge>
+                        </div>
+                        {post.topics?.length > 0 && (
+                          <div className="flex gap-1 mt-2 flex-wrap">
+                            {post.topics.slice(0, 3).map((topic, i) => (
+                              <Badge key={i} variant="outline" className="text-xs">
+                                #{topic}
+                              </Badge>
+                            ))}
+                            {post.topics.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{post.topics.length - 3} more
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </Card>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 text-center py-8">
+                  No posts analyzed yet. Click "Analyze" to fetch content.
+                </p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Post Detail Modal */}
+      <PostDetailModal
+        open={!!selectedPost}
+        onClose={() => setSelectedPost(null)}
+        post={selectedPost}
+        accountName={
+          socialAccounts.find((a) => a.id === selectedPost?.social_account_id)?.account_name
+        }
+      />
+
+      {/* Add Competitor Modal */}
+      <Dialog open={showCompetitorModal} onOpenChange={setShowCompetitorModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Competitor</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Competitor Name</Label>
+              <Input
+                value={newCompetitor.name}
+                onChange={(e) => setNewCompetitor({ ...newCompetitor, name: e.target.value })}
+                placeholder="e.g., Competitor Inc"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Website (optional)</Label>
+              <Input
+                value={newCompetitor.website}
+                onChange={(e) => setNewCompetitor({ ...newCompetitor, website: e.target.value })}
+                placeholder="https://competitor.com"
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button variant="outline" onClick={() => setShowCompetitorModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => createCompetitorMutation.mutate(newCompetitor)}
+                disabled={!newCompetitor.name || createCompetitorMutation.isPending}
+              >
+                {createCompetitorMutation.isPending && (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                )}
+                Add Competitor
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Schedule Post Modal */}
+      <SchedulePostModal
+        open={showScheduleModal}
+        onClose={() => {
+          setShowScheduleModal(false);
+          setEditingPost(null);
+        }}
+        post={editingPost}
+        accounts={socialAccounts}
+        onSave={(data) => createScheduledPostMutation.mutate(data)}
+        onOptimize={async (content, platform) => {
+          const result = await optimizeContentMutation.mutateAsync({ content, platform });
+          return result;
+        }}
+        isLoading={createScheduledPostMutation.isPending}
+        isOptimizing={optimizeContentMutation.isPending}
+      />
+
+      {/* A/B Test Modal */}
+      <ABTestModal
+        open={showABTestModal}
+        onClose={() => {
+          setShowABTestModal(false);
+          setEditingTest(null);
+        }}
+        test={editingTest}
+        accounts={socialAccounts}
+        onSave={(data) => createABTestMutation.mutate(data)}
+        onGenerateVariant={async (content, platform) => {
+          const result = await generateVariantMutation.mutateAsync({ content, platform });
+          return result;
+        }}
+        isLoading={createABTestMutation.isPending}
+        isGenerating={generateVariantMutation.isPending}
+      />
+
+      {/* Competitor Report Modal */}
+      <CompetitorReportModal
+        open={!!selectedReport}
+        onClose={() => setSelectedReport(null)}
+        report={selectedReport}
+        competitorName={
+          competitors.find((c) => c.id === selectedReport?.competitor_id)?.name || 'Competitor'
+        }
+      />
+
+      {/* Compose Multi-Platform Post Modal */}
+      <ComposePostModal
+        open={showComposeModal}
+        onClose={() => setShowComposeModal(false)}
+        accounts={socialAccounts}
+        onSchedule={(posts) => bulkScheduleMutation.mutateAsync(posts)}
+        onAdapt={async (content, platforms, hashtags) => {
+          const result = await adaptContentMutation.mutateAsync({ content, platforms, hashtags });
+          return result;
+        }}
+        isLoading={bulkScheduleMutation.isPending}
+        isAdapting={adaptContentMutation.isPending}
+      />
+    </div>
+  );
+}
