@@ -1,0 +1,35 @@
+{
+  "name": "SocialTag",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name of the tag"
+    },
+    "slug": {
+      "type": "string",
+      "description": "Lowercase, trimmed, hyphenated slug; unique by normalized name"
+    },
+    "color": {
+      "type": "string",
+      "description": "Hex color for the tag pill"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description of the tag"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, the tag is archived and hidden from tag pickers. Archived tags can still be queried and restored."
+    },
+    "usage_count": {
+      "type": "number",
+      "default": 0,
+      "description": "The number of CalendarPost records that currently have this tag's ID in their tag_ids array."
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
