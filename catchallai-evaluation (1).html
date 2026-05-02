@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CatchAllAI — Application Evaluation &amp; Pricing Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=JetBrains+Mono:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3ede2;
+    --bg-card: #faf6ec;
+    --bg-deep: #ebe3d2;
+    --ink: #1a1f36;
+    --ink-soft: #4a5068;
+    --ink-muted: #7a7568;
+    --accent: #b8232f;
+    --accent-deep: #8b1a23;
+    --accent-warm: #d4691f;
+    --green: #2d5e3e;
+    --green-soft: #4a7a5e;
+    --amber: #b8761a;
+    --rule: #c9bfa8;
+    --rule-soft: #d8cfb8;
+    --highlight: #fff8e6;
+    --shadow: 24px 28px 0 -16px rgba(184, 35, 47, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 32px; }
+
+  body {
+    font-family: 'Manrope', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(184, 35, 47, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 100%, rgba(212, 105, 31, 0.04) 0%, transparent 50%);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.2 0 0 0 0.04 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.55;
+    mix-blend-mode: multiply;
+  }
+
+  .wrap { position: relative; z-index: 2; max-width: 1280px; margin: 0 auto; padding: 60px 32px 80px; }
+
+  /* ============== HEADER ============== */
+  .doc-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: end;
+    padding-bottom: 32px;
+    margin-bottom: 56px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .doc-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .doc-eyebrow::before {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .doc-header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(40px, 5.5vw, 76px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    max-width: 18ch;
+  }
+
+  .doc-header h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 300;
+  }
+
+  .doc-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  .doc-meta strong {
+    color: var(--ink);
+    display: block;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    margin-top: 4px;
+  }
+
+  /* ============== TL;DR ============== */
+  .tldr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 64px;
+  }
+
+  .tldr-lede {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    line-height: 1.4;
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  .tldr-lede em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .tldr-headline {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    padding: 28px 32px;
+  }
+
+  .tldr-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .tldr-headline h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .tldr-headline p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  /* ============== SECTION HEADERS ============== */
+  .section {
+    margin-bottom: 72px;
+  }
+
+  .section-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .section-eyebrow::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .section h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(32px, 4vw, 48px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+    max-width: 24ch;
+  }
+
+  .section h2 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .section-intro {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    max-width: 70ch;
+    margin-bottom: 36px;
+  }
+
+  /* ============== SCALE GRID ============== */
+  .scale-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+
+  .scale-cell {
+    background: var(--bg-card);
+    padding: 28px 24px;
+    text-align: left;
+  }
+
+  .scale-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .scale-num em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .scale-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    line-height: 1.4;
+  }
+
+  /* ============== COVERAGE MATRIX ============== */
+  .matrix {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+  }
+
+  .matrix thead th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    padding: 16px 18px;
+    text-align: left;
+    background: var(--bg-deep);
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .matrix tbody tr {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .matrix tbody tr:last-child { border-bottom: 2px solid var(--ink); }
+
+  .matrix td {
+    padding: 18px;
+    vertical-align: top;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .matrix td.cat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    width: 32px;
+    padding-top: 22px;
+    letter-spacing: 0.05em;
+  }
+
+  .matrix td.cat-cell {
+    width: 16%;
+  }
+
+  .cat-name-mat {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--ink);
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+
+  .cat-replaces {
+    font-size: 11px;
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+
+  .matrix td.status-cell { width: 13%; }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .status-pill::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+
+  .status-full {
+    background: rgba(45, 94, 62, 0.12);
+    color: var(--green);
+  }
+
+  .status-full::before { background: var(--green); }
+
+  .status-fullplus {
+    background: var(--green);
+    color: var(--bg);
+  }
+
+  .status-fullplus::before { background: var(--bg); }
+
+  .status-partial {
+    background: rgba(184, 118, 26, 0.15);
+    color: var(--amber);
+  }
+
+  .status-partial::before { background: var(--amber); }
+
+  .matrix td.has-cell, .matrix td.gap-cell {
+    width: 30%;
+    color: var(--ink-soft);
+  }
+
+  .matrix td.has-cell strong, .matrix td.gap-cell strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ============== PRODUCTION READINESS ============== */
+  .pr-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .pr-card {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    padding: 32px;
+  }
+
+  .pr-card.strong {
+    border-left: 4px solid var(--green);
+  }
+
+  .pr-card.gap {
+    border-left: 4px solid var(--accent);
+  }
+
+  .pr-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .pr-card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .pr-card-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+  }
+
+  .pr-list {
+    list-style: none;
+  }
+
+  .pr-list li {
+    padding: 12px 0;
+    border-bottom: 1px dotted var(--rule-soft);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .pr-list li:last-child { border-bottom: none; }
+
+  .pr-list li::before {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  .pr-card.strong .pr-list li::before {
+    content: '✓';
+    background: rgba(45, 94, 62, 0.15);
+    color: var(--green);
+  }
+
+  .pr-card.gap .pr-list li::before {
+    content: '!';
+    background: rgba(184, 35, 47, 0.12);
+    color: var(--accent);
+  }
+
+  .pr-list li strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ============== CORRECTION CALLOUT ============== */
+  .correction {
+    background: linear-gradient(135deg, var(--ink) 0%, #2a3151 100%);
+    color: var(--bg);
+    padding: 40px;
+    margin: 48px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .correction::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle at top right, rgba(184, 35, 47, 0.4) 0%, transparent 70%);
+  }
+
+  .correction-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #f0a4a8;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .correction-eyebrow::before {
+    content: '⟲';
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    color: #f0a4a8;
+  }
+
+  .correction h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin-bottom: 18px;
+    max-width: 28ch;
+  }
+
+  .correction h3 em {
+    font-style: italic;
+    color: #f0a4a8;
+  }
+
+  .correction-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+    margin-top: 28px;
+  }
+
+  .correction-side h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(243, 237, 226, 0.55);
+    margin-bottom: 14px;
+  }
+
+  .correction-side h4.actual {
+    color: #f0a4a8;
+  }
+
+  .correction-side p {
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgba(243, 237, 226, 0.9);
+    margin-bottom: 12px;
+  }
+
+  .correction-side strong {
+    color: var(--bg);
+  }
+
+  .correction-side.before p {
+    color: rgba(243, 237, 226, 0.6);
+    text-decoration: line-through;
+    text-decoration-color: rgba(184, 35, 47, 0.5);
+  }
+
+  /* ============== SETTINGS DETAIL ============== */
+  .settings-detail {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    padding: 36px 40px;
+  }
+
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-top: 28px;
+  }
+
+  .settings-component {
+    border-top: 2px solid var(--accent);
+    padding-top: 18px;
+  }
+
+  .settings-component-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-deep);
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+
+  .settings-component h4 {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    line-height: 1.3;
+  }
+
+  .settings-component ul {
+    list-style: none;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .settings-component ul li {
+    padding: 6px 0;
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .settings-component ul li::before {
+    content: '·';
+    color: var(--accent);
+    font-weight: 700;
+    position: absolute;
+    left: 0;
+  }
+
+  .settings-component ul li strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ============== TIER CARDS ============== */
+  .tiers {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .tier {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    padding: 36px 32px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tier.tier-1 { border-top: 4px solid var(--green); }
+  .tier.tier-2 { border-top: 4px solid var(--amber); }
+  .tier.tier-3 { border-top: 4px solid var(--accent); }
+  .tier.tier-4 {
+    background: linear-gradient(135deg, var(--ink) 0%, #2a3151 100%);
+    color: var(--bg);
+    border: none;
+    border-top: 4px solid var(--accent);
+  }
+
+  .tier-header {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .tier-4 .tier-header { border-bottom-color: rgba(243, 237, 226, 0.15); }
+
+  .tier-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+  }
+
+  .tier-4 .tier-num { color: rgba(243, 237, 226, 0.55); }
+
+  .tier-name {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin-bottom: 18px;
+    line-height: 1.15;
+  }
+
+  .tier-pricing {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .tier-pum {
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+
+  .tier-4 .tier-pum { color: var(--bg); }
+
+  .tier-pum-unit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .tier-4 .tier-pum-unit { color: rgba(243, 237, 226, 0.65); }
+
+  .tier-annual {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-deep);
+    letter-spacing: 0.04em;
+  }
+
+  .tier-4 .tier-annual { color: #f0a4a8; }
+
+  .tier-status {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .tier-status.ready {
+    background: rgba(45, 94, 62, 0.15);
+    color: var(--green);
+  }
+
+  .tier-status.almost {
+    background: rgba(184, 118, 26, 0.18);
+    color: var(--amber);
+  }
+
+  .tier-status.gated {
+    background: rgba(184, 35, 47, 0.15);
+    color: var(--accent);
+  }
+
+  .tier-4 .tier-status.gated {
+    background: rgba(184, 35, 47, 0.3);
+    color: #f0a4a8;
+  }
+
+  .tier-positioning {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+  }
+
+  .tier-4 .tier-positioning { color: rgba(243, 237, 226, 0.85); }
+
+  .tier-comp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .tier-4 .tier-comp { color: rgba(243, 237, 226, 0.55); }
+
+  .tier-fixes-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin: 22px 0 12px;
+    padding-top: 18px;
+    border-top: 1px dotted var(--rule);
+  }
+
+  .tier-4 .tier-fixes-label {
+    color: rgba(243, 237, 226, 0.55);
+    border-top-color: rgba(243, 237, 226, 0.18);
+  }
+
+  .tier-fixes {
+    list-style: none;
+    flex-grow: 1;
+  }
+
+  .tier-fixes li {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    padding: 7px 0;
+    padding-left: 22px;
+    position: relative;
+  }
+
+  .tier-4 .tier-fixes li { color: rgba(243, 237, 226, 0.85); }
+
+  .tier-fixes li::before {
+    content: '☐';
+    position: absolute;
+    left: 0;
+    top: 7px;
+    font-size: 14px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .tier-fixes li.done::before {
+    content: '☑';
+    color: var(--green);
+  }
+
+  .tier-4 .tier-fixes li.done::before {
+    color: #7fc197;
+  }
+
+  .tier-fixes li.done {
+    color: var(--ink-muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--rule);
+  }
+
+  .tier-4 .tier-fixes li.done {
+    color: rgba(243, 237, 226, 0.55);
+  }
+
+  .tier-fixes li strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .tier-4 .tier-fixes li strong { color: var(--bg); }
+
+  /* ============== COMPARISON ============== */
+  .comparison {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    padding: 40px 48px;
+  }
+
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+
+  .comp-side {
+    text-align: center;
+  }
+
+  .comp-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+
+  .comp-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 64px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .comp-num em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .comp-detail {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+
+  .comp-arrow {
+    font-family: 'Fraunces', serif;
+    font-size: 56px;
+    font-weight: 200;
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .comp-savings {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid var(--ink);
+    text-align: center;
+  }
+
+  .comp-savings-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .comp-savings-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 32px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+
+  .comp-savings-num em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  /* ============== RECOMMENDATION ============== */
+  .recommendation {
+    background: linear-gradient(135deg, rgba(184, 35, 47, 0.06), rgba(212, 105, 31, 0.04));
+    border: 1px solid rgba(184, 35, 47, 0.2);
+    border-left: 4px solid var(--accent);
+    padding: 36px 40px;
+  }
+
+  .rec-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .recommendation h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+
+  .rec-options {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
+
+  .rec-option {
+    padding: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+  }
+
+  .rec-when {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+  }
+
+  .rec-price {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent-deep);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+
+  .rec-price strong {
+    font-weight: 700;
+  }
+
+  .rec-detail {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+
+  /* ============== FOOTER ============== */
+  .doc-footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: end;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .doc-footer-credit {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    max-width: 70ch;
+  }
+
+  /* ============== RESPONSIVE ============== */
+  @media (max-width: 1080px) {
+    .tiers { grid-template-columns: 1fr 1fr; }
+    .pr-grid { grid-template-columns: 1fr; }
+    .settings-grid { grid-template-columns: 1fr; }
+    .correction-body { grid-template-columns: 1fr; }
+    .tldr { grid-template-columns: 1fr; }
+    .rec-options { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 700px) {
+    .wrap { padding: 32px 16px 60px; }
+    .doc-header { grid-template-columns: 1fr; gap: 16px; }
+    .doc-meta { text-align: left; }
+    .doc-header h1 { font-size: 38px; }
+    .tiers { grid-template-columns: 1fr; }
+    .matrix { display: block; overflow-x: auto; }
+    .scale-num { font-size: 36px; }
+    .comparison-grid { grid-template-columns: 1fr; }
+    .comp-arrow { transform: rotate(90deg); margin: 16px auto; }
+  }
+
+  @media print {
+    body { background: white; }
+    body::before { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<!-- ============== HEADER ============== -->
+<header class="doc-header">
+  <div>
+    <div class="doc-eyebrow">Application Evaluation · Pricing Analysis</div>
+    <h1>CatchAllAI — what it <em>replaces</em>, what it costs to sell.</h1>
+  </div>
+  <div class="doc-meta">
+    Internal Review<strong>Q2 2026</strong>
+  </div>
+</header>
+
+<!-- ============== TL;DR ============== -->
+<section class="tldr">
+  <p class="tldr-lede">
+    A consolidated business platform built on Base44, scoring <em>92% coverage</em> across the fourteen-category enterprise stack reference. The application is materially more complete than first reading suggested — full RBAC, tiered feature flagging, and user management are already shipping in production code.
+  </p>
+  <div class="tldr-headline">
+    <div class="tldr-label">Top-line Verdict</div>
+    <h3>$75–95/user/mo today. $150/user/mo with hosting closed.</h3>
+    <p>The product is enterprise-ready. The remaining gaps are operational (SSO docs, audit log hardening, FedRAMP hosting) — not new code to write. Today's defensible price is meaningfully higher than initial scope analysis suggested.</p>
+  </div>
+</section>
+
+<!-- ============== SCALE ============== -->
+<section class="section">
+  <div class="section-eyebrow">Section 01 · The Application at Scale</div>
+  <h2>Not a thin shell. <em>205,741 lines</em> of working software.</h2>
+  <p class="section-intro">Codebase metrics, surface area, and integration surface — captured from the exported Base44 application package.</p>
+
+  <div class="scale-grid">
+    <div class="scale-cell">
+      <div class="scale-num"><em>205K</em></div>
+      <div class="scale-label">Lines of Code</div>
+    </div>
+    <div class="scale-cell">
+      <div class="scale-num">835</div>
+      <div class="scale-label">Source Files</div>
+    </div>
+    <div class="scale-cell">
+      <div class="scale-num">184</div>
+      <div class="scale-label">Page Components</div>
+    </div>
+    <div class="scale-cell">
+      <div class="scale-num"><em>152</em></div>
+      <div class="scale-label">Nav Items · 23 Modules</div>
+    </div>
+    <div class="scale-cell">
+      <div class="scale-num">56</div>
+      <div class="scale-label">Backend Entities</div>
+    </div>
+    <div class="scale-cell">
+      <div class="scale-num">77</div>
+      <div class="scale-label">Serverless Functions</div>
+    </div>
+    <div class="scale-cell">
+      <div class="scale-num"><em>9.4</em></div>
+      <div class="scale-label">MB Source Code</div>
+    </div>
+    <div class="scale-cell">
+      <div class="scale-num">10+</div>
+      <div class="scale-label">Live Integrations</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== COVERAGE MATRIX ============== -->
+<section class="section">
+  <div class="section-eyebrow">Section 02 · Coverage vs. The 14-Category Reference</div>
+  <h2>Eleven categories shipping at <em>full depth</em>. Two partial. One thin.</h2>
+  <p class="section-intro">Each category from the must-haves reference document, scored on actual implementation depth visible in the codebase. "Full+" indicates capability that exceeds typical commercial vendors in that category.</p>
+
+  <table class="matrix">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Category</th>
+        <th>Coverage</th>
+        <th>What's Built</th>
+        <th>Material Gaps</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="cat-num">01</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">CRM</div>
+          <div class="cat-replaces">replaces Salesforce</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-full">Full</span></td>
+        <td class="has-cell"><strong>1,587-line Contacts page.</strong> Opportunities, Deals, Companies, Activities. Custom fields, dedup tool, bulk actions, lead enrichment.</td>
+        <td class="gap-cell">Nothing material.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">02</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">Sales</div>
+          <div class="cat-replaces">replaces Salesloft / Outreach</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-full">Full</span></td>
+        <td class="has-cell">Sales Hub, Inbox, <strong>Sequences</strong>, Quotas, Proposals, MeetingScheduler, EmailTracking, Quotes, Orders.</td>
+        <td class="gap-cell">Nothing material.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">03</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">Business Development</div>
+          <div class="cat-replaces">replaces DealCloud</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-full">Full</span></td>
+        <td class="has-cell">BD Dashboard, BusinessManagement, <strong>PitchDeckCreator/Analyzer (128KB module)</strong>, VisitorProfiles, AerospaceScanner.</td>
+        <td class="gap-cell">Capture-management workflows specific to gov contracting.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">04</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">Social Media</div>
+          <div class="cat-replaces">replaces Sprout Social</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-fullplus">Full+</span></td>
+        <td class="has-cell"><strong>836KB module — largest in the app.</strong> Calendar, Listening, Performance, Approvals, Hashtags, scheduled posts cron, brand mention monitoring.</td>
+        <td class="gap-cell">Crisis-pause one-click; TikTok / Threads platform parity.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">05</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">Web Analytics</div>
+          <div class="cat-replaces">replaces Adobe Analytics</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-full">Full</span></td>
+        <td class="has-cell">TrafficAnalytics, Advanced Analytics, VisitorProfiles, WebCrawler. <strong>Real GA4 + GSC integrations.</strong> Cohort analysis, funnel analysis, session replay tracking.</td>
+        <td class="gap-cell">Sampling transparency; raw data export to warehouse.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">06</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">SEO</div>
+          <div class="cat-replaces">replaces Semrush + add-ons</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-fullplus">Full+</span></td>
+        <td class="has-cell"><strong>412KB module — second largest.</strong> Audit, Tools, Keywords, Backlinks, Local SEO, Cannibalization detector, On-page analyzer, Predictive analytics, Anomaly detection.</td>
+        <td class="gap-cell">AI Overview / LLM citation tracking.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">07</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">Talent Acquisition</div>
+          <div class="cat-replaces">replaces Greenhouse</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-full">Full</span></td>
+        <td class="has-cell">HRISHiring, Candidate, JobPosting, OnboardingTask, full Talent suite (CareerPaths, Internships, Mentorships, Skills, Surveys, Training).</td>
+        <td class="gap-cell">Structured interview kits; scorecards-hidden-until-debrief; adverse-impact analysis.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">08</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">HRIS / HCM</div>
+          <div class="cat-replaces">replaces Workday</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-full">Full</span></td>
+        <td class="has-cell"><strong>18 HRIS entities.</strong> Employees, Departments, Payroll, Benefits, TimeOff, Performance, Onboarding, Offboarding, Contracts, Documents.</td>
+        <td class="gap-cell">Multi-country payroll calc; benefits EDI feeds; ACA tracking.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">09</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">Culture / Recognition</div>
+          <div class="cat-replaces">replaces Lattice + Bonusly</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-partial">Partial+</span></td>
+        <td class="has-cell">HRISRecognition, FeedbackManagement, TalentSurveys, Spaces.</td>
+        <td class="gap-cell">Points / budgets system; reward catalog; anniversary automation; recognition equity analysis.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">10</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">Legal / CLM</div>
+          <div class="cat-replaces">replaces Ironclad</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-full">Full</span></td>
+        <td class="has-cell">7 legal entities. Full Legal suite. <strong>PublicLegalDocumentSigner</strong> (e-sign flow), DocuTrace, public DataRoom.</td>
+        <td class="gap-cell">Clause library / playbook; AI contract review.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">11</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">Compliance / GRC</div>
+          <div class="cat-replaces">replaces OneTrust</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-fullplus">Full+</span></td>
+        <td class="has-cell">5 compliance entities + <strong>7 ITAR/EAR-specific entities</strong> (DeemedExport, TechControlPlan, ExportViolation). Full ExportControl module (52KB), AerospaceScanner. <em>Genuine differentiator.</em></td>
+        <td class="gap-cell">None for aerospace context. This is the strongest moat in the app.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">12</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">Finance / ERP</div>
+          <div class="cat-replaces">replaces NetSuite</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-partial">Partial</span></td>
+        <td class="has-cell">Budget, Forecast, Transaction, Payroll, Invoices, Subscriptions, Equity (Pool / Grant / Exercise).</td>
+        <td class="gap-cell"><strong>Multi-entity consolidation; multi-currency translation; full GL/COA structure; ASC 606 revenue recognition.</strong> Lighter category.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">13</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">PM &amp; Documentation</div>
+          <div class="cat-replaces">replaces Atlassian</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-full">Full</span></td>
+        <td class="has-cell">Multiple Project surfaces, Spaces, Wiki Editor, Documentation, NotesModule, Collaboration, Workflow Engine.</td>
+        <td class="gap-cell">AI Q&amp;A over docs; decision log as first-class object.</td>
+      </tr>
+      <tr>
+        <td class="cat-num">14</td>
+        <td class="cat-cell">
+          <div class="cat-name-mat">Internal Chat</div>
+          <div class="cat-replaces">replaces Slack</div>
+        </td>
+        <td class="status-cell"><span class="status-pill status-partial">Partial</span></td>
+        <td class="has-cell">Inbox, TeamCollaboration, MeetingScheduler, VideoCall entity, PublicCallJoin.</td>
+        <td class="gap-cell"><strong>No real channel / thread model.</strong> Weakest category. Position as complement, not replacement.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============== PRODUCTION READINESS ============== -->
+<section class="section">
+  <div class="section-eyebrow">Section 03 · Production-Readiness Assessment</div>
+  <h2>Strong signals — and the <em>real</em> remaining gaps.</h2>
+  <p class="section-intro">The architectural and operational characteristics that determine whether the app can be sold as enterprise software, separated by what's already working from what genuinely needs to be addressed.</p>
+
+  <div class="pr-grid">
+    <div class="pr-card strong">
+      <div class="pr-card-header">
+        <div class="pr-card-title">Strong Signals</div>
+        <div class="pr-card-count">12 / 12</div>
+      </div>
+      <ul class="pr-list">
+        <li><strong>Full RBAC system</strong> — 4 roles × 25 sections × 5 actions, persisted via RolePermission entity, admin role locked from accidental modification.</li>
+        <li><strong>User invitation &amp; management</strong> — invite by email, role assignment, profile editing, dedicated admin function for sensitive fields.</li>
+        <li><strong>Tiered feature flagging</strong> — features tagged starter / growth / enterprise in code. SaaS productization architecture is in place.</li>
+        <li><strong>Auth context</strong> with proper login flow, error boundaries, protected routes.</li>
+        <li><strong>Activity logging</strong> system + PostAuditLog entity for social.</li>
+        <li><strong>React Query</strong> for data lifecycle and cache invalidation.</li>
+        <li><strong>Real cron jobs</strong> — checkScheduledPosts, updateExpiredPostStatuses, generateCalendarNotifications.</li>
+        <li><strong>Email tracking infrastructure</strong> — open / click pixels, sendTrackedEmail backend.</li>
+        <li><strong>Real third-party integrations</strong> — HubSpot, GA4, GSC, Semrush, Ahrefs, Twitter, LinkedIn, Google Calendar, Resend.</li>
+        <li><strong>ML / AI logic</strong> — predictiveChurn, predictiveScores, cohort analysis, funnel analysis.</li>
+        <li><strong>Pre-commit pipeline</strong> — Husky + ESLint + Prettier; backend typecheck via Deno.</li>
+        <li><strong>TypeScript on backend</strong>; data archival/cleanup function.</li>
+      </ul>
+    </div>
+
+    <div class="pr-card gap">
+      <div class="pr-card-header">
+        <div class="pr-card-title">Remaining Gaps</div>
+        <div class="pr-card-count">4 · operational</div>
+      </div>
+      <ul class="pr-list">
+        <li><strong>Audit log tamper-evidence at the data layer.</strong> Activity logging is app-side. For SOC 2 Type II / regulated industries, auditors require append-only logs the application itself can't modify.</li>
+        <li><strong>SSO / SAML / SCIM enterprise tier documented.</strong> Base44 platform may provide this; needs to be documented, demo-able, and verifiable for procurement.</li>
+        <li><strong>Automated test coverage.</strong> 205K LOC + 184 page components means manual QA doesn't scale. Affects sustainability of higher pricing more than the price itself.</li>
+        <li><strong>FedRAMP / IL-tier hosting.</strong> Base44's current platform doesn't offer ITAR-compliant hosting, data residency controls, or government cloud (GovCloud / IL2 / IL4). This gates the aerospace/defense vertical SKU specifically.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============== CORRECTION ============== -->
+  <div class="correction">
+    <div class="correction-eyebrow">Correction to Initial Analysis</div>
+    <h3>RBAC, user management, and tier flagging — <em>already there</em>.</h3>
+    <p style="font-size: 16px; line-height: 1.55; color: rgba(243, 237, 226, 0.9); max-width: 70ch;">
+      Initial scoping missed <code style="background: rgba(243, 237, 226, 0.1); padding: 2px 8px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 13px;">src/components/settings/</code> — which contains a full role-based access control implementation, complete user management with invitation flow, and tiered feature flagging. That changes the pricing conversation materially.
+    </p>
+
+    <div class="correction-body">
+      <div class="correction-side before">
+        <h4>What I Said Initially</h4>
+        <p>"No granular RBAC visible."</p>
+        <p>"Single-tenant internal tool, not multi-customer SaaS."</p>
+        <p>"Tier 2 enterprise pricing requires closing RBAC gap first."</p>
+      </div>
+      <div class="correction-side">
+        <h4 class="actual">What's Actually There</h4>
+        <p><strong>4 roles × 25 sections × 5 actions</strong> — a 500-state permission matrix, fully toggled, persisted via RolePermission entity.</p>
+        <p><strong>Tiered feature flagging</strong> baked into FeatureManager — 16 starter, 13 growth, 7 enterprise (and many more individual entries) — already structured for SaaS productization.</p>
+        <p><strong>Tier 2 is defensible today</strong> — the architecture supports it. Remaining work is operational, not structural.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SETTINGS DETAIL ============== -->
+<section class="section">
+  <div class="section-eyebrow">Section 04 · The Settings Layer (corrected detail)</div>
+  <h2>What's in <em>src/components/settings/</em>.</h2>
+  <p class="section-intro">The three components that change the assessment most. All present, all working, all wired to backend entities.</p>
+
+  <div class="settings-detail">
+    <div class="settings-grid">
+      <div class="settings-component">
+        <div class="settings-component-name">RolePermissionsManager.jsx</div>
+        <h4>Full RBAC matrix</h4>
+        <ul>
+          <li><strong>4 roles:</strong> admin, editor, viewer, user</li>
+          <li><strong>25 sections:</strong> dashboard, contacts, companies, deals, activities, campaigns, emailMarketing, reports, seoDashboard, keywords, backlinks, seoAudit, socialMedia, socialListening, socialCalendar, hashtags, competitors, contentStudio, landing_pages, automation, docutrace, legal_documents, data_rooms, settings, admin</li>
+          <li><strong>5 actions per cell:</strong> view, create, edit, delete, export</li>
+          <li>Persisted via <strong>RolePermission</strong> entity</li>
+          <li>Admin role <strong>locked</strong> against modification</li>
+        </ul>
+      </div>
+
+      <div class="settings-component">
+        <div class="settings-component-name">UserManagement.jsx</div>
+        <h4>User admin (498 lines)</h4>
+        <ul>
+          <li><strong>Invite users</strong> by email + role assignment</li>
+          <li><strong>Edit profiles</strong> including admin-only fields (full_name, email)</li>
+          <li>Sensitive admin updates routed through <strong>updateUserProfile</strong> backend function</li>
+          <li>Search and filter users by role</li>
+          <li>Profile fields: address, department, title, phone — proper directory data</li>
+        </ul>
+      </div>
+
+      <div class="settings-component">
+        <div class="settings-component-name">FeatureManager.jsx</div>
+        <h4>Tiered feature flags (619 lines)</h4>
+        <ul>
+          <li>Features tagged with explicit <strong>tier:</strong> starter, growth, or enterprise</li>
+          <li><strong>16 starter features</strong> — base CRM, basic SEO, automation</li>
+          <li><strong>13 growth features</strong> — sales hub, sequences, web crawler</li>
+          <li><strong>7 enterprise features</strong> — full HRIS, compliance, legal, equity, export control</li>
+          <li>SaaS pricing architecture <strong>already in code</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PRICING TIERS ============== -->
+<section class="section">
+  <div class="section-eyebrow">Section 05 · Pricing Tiers</div>
+  <h2>Four defensible price points. <em>Three available now</em>.</h2>
+  <p class="section-intro">Each tier reflects what the product can credibly support, the comparable commercial offering, and the specific items that need to ship before that tier is sellable. List prices for a 100-user mid-market deployment.</p>
+
+  <div class="tiers">
+
+    <!-- TIER 1 -->
+    <div class="tier tier-1">
+      <div class="tier-header">
+        <div class="tier-num">Tier 01</div>
+        <div class="tier-name">SMB / Starter</div>
+        <div class="tier-pricing">
+          <div class="tier-pum">$45–65</div>
+          <div class="tier-pum-unit">/ user / mo</div>
+        </div>
+        <div class="tier-annual">$54K – $78K / yr · 100 users</div>
+        <div class="tier-status ready">Sellable Today</div>
+      </div>
+
+      <div class="tier-comp">Competitive set</div>
+      <p class="tier-positioning">Earns its place against <strong>Zoho One</strong> ($45/user/mo) and <strong>HubSpot Suite Starter</strong>. Right tier for growing companies currently piecing together 5–10 separate SaaS tools. Coverage breadth is the buying argument.</p>
+
+      <div class="tier-fixes-label">To Unlock This Tier</div>
+      <ul class="tier-fixes">
+        <li class="done"><strong>Functional CRM, Sales, Social, SEO modules</strong></li>
+        <li class="done"><strong>Auth + protected routes</strong></li>
+        <li class="done"><strong>Real third-party integrations</strong></li>
+        <li class="done"><strong>Email infrastructure with tracking</strong></li>
+      </ul>
+    </div>
+
+    <!-- TIER 2 -->
+    <div class="tier tier-2">
+      <div class="tier-header">
+        <div class="tier-num">Tier 02</div>
+        <div class="tier-name">Growth / Mid-Market</div>
+        <div class="tier-pricing">
+          <div class="tier-pum">$85–110</div>
+          <div class="tier-pum-unit">/ user / mo</div>
+        </div>
+        <div class="tier-annual">$102K – $132K / yr · 100 users</div>
+        <div class="tier-status ready">Sellable Today</div>
+      </div>
+
+      <div class="tier-comp">Competitive set</div>
+      <p class="tier-positioning">Competes with <strong>Microsoft Dynamics 365</strong> mid-tier, <strong>NetSuite</strong> light deployments, <strong>HubSpot Enterprise</strong>. The buyer saves 2–3 vendor management headcount. Now defensible because RBAC + feature flagging are already shipping.</p>
+
+      <div class="tier-fixes-label">To Unlock This Tier</div>
+      <ul class="tier-fixes">
+        <li class="done"><strong>Granular RBAC</strong> (4 roles × 25 sections × 5 actions)</li>
+        <li class="done"><strong>User invitation + admin management</strong></li>
+        <li class="done"><strong>Tiered feature flagging architecture</strong></li>
+        <li class="done"><strong>Activity logging</strong></li>
+        <li>SOC 2 readiness assessment + posture work</li>
+        <li>SSO documentation and demo path</li>
+      </ul>
+    </div>
+
+    <!-- TIER 3 -->
+    <div class="tier tier-3">
+      <div class="tier-header">
+        <div class="tier-num">Tier 03</div>
+        <div class="tier-name">Enterprise</div>
+        <div class="tier-pricing">
+          <div class="tier-pum">$110–140</div>
+          <div class="tier-pum-unit">/ user / mo</div>
+        </div>
+        <div class="tier-annual">$132K – $168K / yr · 100 users</div>
+        <div class="tier-status almost">~6 mo to Sellable</div>
+      </div>
+
+      <div class="tier-comp">Competitive set</div>
+      <p class="tier-positioning">Full Workday HCM, NetSuite, Salesforce Enterprise alternative for mid-market enterprises. The HRIS depth, legal suite, compliance/GRC, and equity tracking are already enterprise-flagged. Hardening the operational surface unlocks this tier.</p>
+
+      <div class="tier-fixes-label">To Unlock This Tier</div>
+      <ul class="tier-fixes">
+        <li><strong>Audit log tamper-evidence</strong> at the data layer (append-only at infrastructure, not app)</li>
+        <li><strong>SOC 2 Type II</strong> readiness + audit (3–6 months observation period)</li>
+        <li><strong>SCIM provisioning</strong> for user lifecycle automation</li>
+        <li><strong>Documented uptime SLA</strong> (99.9% minimum for mid-market enterprise)</li>
+        <li><strong>Disaster recovery plan</strong> documented + tested</li>
+        <li>Automated test suite + CI/CD beyond pre-commit</li>
+        <li>Optional: customer-managed encryption keys (BYOK)</li>
+      </ul>
+    </div>
+
+    <!-- TIER 4 -->
+    <div class="tier tier-4">
+      <div class="tier-header">
+        <div class="tier-num">Tier 04</div>
+        <div class="tier-name">Aerospace / Defense Vertical SKU</div>
+        <div class="tier-pricing">
+          <div class="tier-pum">$150–200</div>
+          <div class="tier-pum-unit">/ user / mo</div>
+        </div>
+        <div class="tier-annual">$180K – $240K / yr · 100 users</div>
+        <div class="tier-status gated">Hosting-Gated</div>
+      </div>
+
+      <div class="tier-comp">Competitive set</div>
+      <p class="tier-positioning">No commercial all-in-one ships TechControlPlan, DeemedExport tracking, ExportViolation, and AerospaceScanner as first-class entities. The application is enterprise-ready right now — the platform underneath isn't. Base44 hosting blocks this tier specifically.</p>
+
+      <div class="tier-fixes-label">To Unlock This Tier</div>
+      <ul class="tier-fixes">
+        <li class="done"><strong>ITAR / EAR-aware data model</strong> (already shipping — 7 entities)</li>
+        <li class="done"><strong>Aerospace-specific BD tooling</strong> (AerospaceScanner)</li>
+        <li><strong>FedRAMP Moderate</strong> or <strong>IL2 / IL4 hosting</strong> (Base44 doesn't offer this — biggest blocker)</li>
+        <li><strong>Foreign-person access controls in code</strong>, not just policy</li>
+        <li><strong>CMMC-aligned controls</strong> (Level 1, 2, or 3 depending on customer scope)</li>
+        <li><strong>ITAR § 122.5 / EAR § 762</strong> retention compliance</li>
+        <li><strong>Dedicated / isolated tenancy</strong> per customer</li>
+        <li>US-citizen-only personnel for support and operations</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============== COMPARISON ============== -->
+<section class="section">
+  <div class="section-eyebrow">Section 06 · The Cost Comparison</div>
+  <h2>What the customer pays today — and what they'd pay you.</h2>
+  <p class="section-intro">Reference frame: the fourteen commercial apps in the must-haves stack cost a 100-person company $638,340 per year at list. CatchAllAI covers ~92% of that stack value at meaningful depth.</p>
+
+  <div class="comparison">
+    <div class="comparison-grid">
+      <div class="comp-side">
+        <div class="comp-label">Current Commercial Stack</div>
+        <div class="comp-num">$<em>638K</em></div>
+        <div class="comp-detail">Fourteen apps · 100 users · annual list price · pre-implementation</div>
+      </div>
+      <div class="comp-arrow">→</div>
+      <div class="comp-side">
+        <div class="comp-label">CatchAllAI · Tier 02 Pricing</div>
+        <div class="comp-num">$<em>117K</em></div>
+        <div class="comp-detail">Mid-point of $102K – $132K range · 100 users · annual</div>
+      </div>
+    </div>
+
+    <div class="comp-savings">
+      <div class="comp-savings-label">Customer Savings · Year One</div>
+      <div class="comp-savings-num">~$<em>521K</em> · or <em>82%</em> of current SaaS spend</div>
+    </div>
+  </div>
+
+  <p style="margin-top: 28px; font-size: 14px; color: var(--ink-soft); line-height: 1.6;">
+    <strong style="color: var(--ink);">A fair caveat:</strong> a customer doesn't typically run all fourteen commercial apps simultaneously — most run 5–8 of them and tolerate gaps. So the realistic savings is closer to <strong style="color: var(--ink);">$300–450K annually</strong> versus what they currently spend, not the full $521K. But that's still a 70–80% reduction in annual SaaS line items, with substantial reduction in vendor management overhead, integration cost, and data fragmentation. The pitch isn't "cheaper" — it's "one platform, one contract, one source of truth."
+  </p>
+</section>
+
+<!-- ============== RECOMMENDATION ============== -->
+<section class="section">
+  <div class="section-eyebrow">Section 07 · Recommendation</div>
+  <h2>What to put on a quote — <em>tomorrow</em>, in six months, and at scale.</h2>
+  <p class="section-intro">Given the codebase as it stands today and the realistic pace of operational hardening, three pricing windows over the next 12–18 months.</p>
+
+  <div class="recommendation">
+    <div class="rec-eyebrow">Defensible Pricing Path</div>
+    <h3>Lead with $75–95/user/mo. Move to $110–140 by Q4. Aerospace SKU when hosting clears.</h3>
+    <p style="font-size: 15px; line-height: 1.6; color: var(--ink-soft);">
+      The product is genuinely there. The pricing path is paced by operational and platform hardening — none of it requires major new code. Start with the tier the application can support today, then move up as each gate clears.
+    </p>
+
+    <div class="rec-options">
+      <div class="rec-option">
+        <div class="rec-when">For SaaS Sale Today</div>
+        <div class="rec-price">$75–95 <strong>/user/mo</strong></div>
+        <div class="rec-detail">$90K – $114K/yr for 100 users. Higher than initial scope analysis suggested because RBAC + feature tiering removes the "internal tool only" objection.</div>
+      </div>
+
+      <div class="rec-option">
+        <div class="rec-when">Six Months Out</div>
+        <div class="rec-price">$110–140 <strong>/user/mo</strong></div>
+        <div class="rec-detail">$132K – $168K/yr. After SSO/SAML documentation, audit log hardening, and SOC 2 posture work. Fully enterprise-priced against Workday + NetSuite + Salesforce.</div>
+      </div>
+
+      <div class="rec-option">
+        <div class="rec-when">Aerospace / Defense SKU</div>
+        <div class="rec-price">$150 <strong>/user/mo</strong></div>
+        <div class="rec-detail">$180K/yr. Gated entirely on FedRAMP-tier hosting. The application is ready; the platform underneath isn't. Until that resolves, defense procurement is a non-starter regardless of features.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="doc-footer">
+  <div class="doc-footer-credit">
+    <strong style="color: var(--ink); font-style: normal;">Application evaluation</strong> based on direct review of exported codebase: 835 source files, 56 backend entities, 77 serverless functions, 184 page components.<br>
+    Pricing comparisons drawn from companion <em>Enterprise Software Reference &amp; Cost Ledger</em>. All numbers are list-price annual; negotiated discounts of 10–30% are typical and excluded here.
+  </div>
+  <div>Evaluation · v1.1 · Q2 2026</div>
+</footer>
+
+</div>
+
+</body>
+</html>

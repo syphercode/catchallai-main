@@ -1,0 +1,3085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enterprise Software — A Field Reference &amp; Cost Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3ede2;
+    --bg-card: #faf6ec;
+    --bg-deep: #ebe3d2;
+    --ink: #1a1f36;
+    --ink-soft: #4a5068;
+    --ink-muted: #7a7568;
+    --accent: #b8232f;
+    --accent-deep: #8b1a23;
+    --accent-warm: #d4691f;
+    --rule: #c9bfa8;
+    --rule-soft: #d8cfb8;
+    --highlight: #fff8e6;
+    --shadow: 24px 28px 0 -16px rgba(184, 35, 47, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+
+  body {
+    font-family: 'Manrope', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(184, 35, 47, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 100%, rgba(212, 105, 31, 0.04) 0%, transparent 50%);
+  }
+
+  /* Subtle paper texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.2 0 0 0 0.04 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.6;
+    mix-blend-mode: multiply;
+  }
+
+  .wrap { position: relative; z-index: 2; }
+
+  /* ==========================================
+     STICKY HEADER + NAV
+     ========================================== */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(243, 237, 226, 0.94);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: relative;
+    align-self: center;
+    flex-shrink: 0;
+  }
+
+  .brand-mark::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    background: var(--bg);
+    border-radius: 50%;
+  }
+
+  .brand-text small {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-top: 2px;
+  }
+
+  .search-box {
+    position: relative;
+    flex: 1;
+    max-width: 340px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 9px 14px 9px 36px;
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .search-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(184, 35, 47, 0.1);
+  }
+
+  .search-box::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--ink-muted);
+    border-radius: 50%;
+  }
+
+  .search-box::after {
+    content: '';
+    position: absolute;
+    left: 24px;
+    top: 60%;
+    width: 6px;
+    height: 1.5px;
+    background: var(--ink-muted);
+    transform: rotate(45deg);
+  }
+
+  /* Category Quick Nav */
+  .quicknav {
+    border-top: 1px solid var(--rule-soft);
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .quicknav-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 10px 32px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .quicknav a {
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .quicknav a:hover {
+    color: var(--accent);
+    background: rgba(184, 35, 47, 0.08);
+  }
+
+  .quicknav-divider {
+    flex-shrink: 0;
+    width: 1px;
+    height: 14px;
+    background: var(--rule);
+    margin: 0 4px;
+  }
+
+  /* ==========================================
+     HERO
+     ========================================== */
+  .hero {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 80px 32px 60px;
+    position: relative;
+  }
+
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(48px, 7vw, 96px);
+    line-height: 0.96;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    max-width: 16ch;
+    margin-bottom: 24px;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 300;
+  }
+
+  .hero-lede {
+    max-width: 56ch;
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin-bottom: 48px;
+  }
+
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 32px;
+    max-width: 900px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .meta-item .meta-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 42px;
+    line-height: 1;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .meta-item .meta-num em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .meta-item .meta-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  /* ==========================================
+     SECTION DIVIDERS
+     ========================================== */
+  .domain {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 32px 24px;
+  }
+
+  .domain-header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 32px;
+    align-items: end;
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 48px;
+  }
+
+  .domain-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 200;
+    font-size: 120px;
+    line-height: 0.8;
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .domain-title h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+
+  .domain-title p {
+    font-size: 16px;
+    color: var(--ink-soft);
+    max-width: 60ch;
+  }
+
+  /* ==========================================
+     APP CARDS
+     ========================================== */
+  .app-grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  .app {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    margin-bottom: 28px;
+    position: relative;
+    transition: box-shadow 0.3s;
+  }
+
+  .app:hover {
+    box-shadow: var(--shadow);
+  }
+
+  .app-header {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 24px;
+    padding: 32px 36px;
+    align-items: start;
+    border-bottom: 1px solid var(--rule-soft);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .app-header:hover {
+    background: var(--highlight);
+  }
+
+  .app-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    padding-top: 6px;
+    border-top: 2px solid var(--accent);
+    width: 60px;
+  }
+
+  .app-title h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 30px;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin-bottom: 10px;
+  }
+
+  .app-title .app-job {
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    max-width: 70ch;
+    font-style: italic;
+  }
+
+  .app-title .app-job::before {
+    content: '"';
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    color: var(--accent);
+    font-style: normal;
+    line-height: 0;
+    position: relative;
+    top: 8px;
+    margin-right: 4px;
+  }
+
+  .app-title .app-job::after {
+    content: '"';
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    color: var(--accent);
+    font-style: normal;
+    line-height: 0;
+    position: relative;
+    top: 8px;
+    margin-left: 4px;
+  }
+
+  .app-toggle {
+    align-self: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .app-toggle::before, .app-toggle::after {
+    content: '';
+    position: absolute;
+    background: var(--ink);
+    transition: transform 0.3s;
+  }
+
+  .app-toggle::before { width: 14px; height: 1.5px; }
+  .app-toggle::after { width: 1.5px; height: 14px; }
+
+  .app.open .app-toggle {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .app.open .app-toggle::before,
+  .app.open .app-toggle::after { background: var(--bg); }
+  .app.open .app-toggle::after { transform: scaleY(0); }
+
+  .app-body {
+    display: none;
+    padding: 8px 36px 40px;
+  }
+
+  .app.open .app-body { display: block; }
+
+  /* Sub-section grouping */
+  .group {
+    margin-top: 36px;
+  }
+
+  .group-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent-deep);
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--rule);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .group-label::before {
+    content: '§';
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--accent);
+  }
+
+  /* Must-have items */
+  .items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 20px;
+  }
+
+  .item {
+    padding: 18px 20px;
+    background: var(--bg);
+    border-left: 3px solid var(--rule);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .item:hover {
+    border-left-color: var(--accent);
+    transform: translateX(2px);
+  }
+
+  .item-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 1.25;
+    color: var(--ink);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .item-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  .item-need {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .item-need strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* Trap to avoid callout */
+  .trap {
+    margin-top: 40px;
+    padding: 28px 32px;
+    background: linear-gradient(135deg, rgba(184, 35, 47, 0.06), rgba(212, 105, 31, 0.04));
+    border: 1px solid rgba(184, 35, 47, 0.2);
+    border-left: 4px solid var(--accent);
+    position: relative;
+  }
+
+  .trap-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .trap-label::before {
+    content: '!';
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Fraunces', serif;
+  }
+
+  .trap-content {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  .trap-content em {
+    color: var(--accent-deep);
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  /* Honest test */
+  .test {
+    margin-top: 24px;
+    padding: 24px 28px;
+    background: var(--bg-deep);
+    border: 1px dashed var(--rule);
+  }
+
+  .test-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 14px;
+  }
+
+  .test ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .test li {
+    padding: 8px 0 8px 24px;
+    position: relative;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    border-bottom: 1px solid rgba(201, 191, 168, 0.5);
+  }
+
+  .test li:last-child { border-bottom: none; }
+
+  .test li::before {
+    content: '?';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ==========================================
+     FOOTER
+     ========================================== */
+  .footer {
+    max-width: 1400px;
+    margin: 80px auto 0;
+    padding: 48px 32px;
+    border-top: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: end;
+  }
+
+  .footer-credit {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    color: var(--ink-muted);
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .footer-credit strong {
+    color: var(--ink);
+    font-style: normal;
+  }
+
+  .footer-mark {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    text-align: right;
+  }
+
+  /* ==========================================
+     SEARCH HIGHLIGHT
+     ========================================== */
+  .item.dim { opacity: 0.18; }
+  .item.match {
+    background: var(--highlight);
+    border-left-color: var(--accent);
+  }
+
+  /* ==========================================
+     RESPONSIVE
+     ========================================== */
+  @media (max-width: 768px) {
+    .header-inner { flex-wrap: wrap; padding: 12px 20px; }
+    .search-box { order: 3; max-width: 100%; }
+    .quicknav-inner { padding: 8px 20px; }
+    .hero { padding: 50px 20px 40px; }
+    .domain { padding: 40px 20px 16px; }
+    .domain-header { grid-template-columns: 1fr; gap: 12px; }
+    .domain-num { font-size: 80px; }
+    .domain-title h2 { font-size: 36px; }
+    .app-grid { padding: 0 20px; }
+    .app-header { grid-template-columns: 1fr auto; gap: 16px; padding: 24px 20px; }
+    .app-id { display: none; }
+    .app-title h3 { font-size: 22px; }
+    .app-body { padding: 8px 20px 32px; }
+    .items { grid-template-columns: 1fr; }
+    .footer { grid-template-columns: 1fr; padding: 36px 20px; }
+  }
+
+  /* Print styling */
+  @media print {
+    .header, .quicknav, .app-toggle { display: none; }
+    .app, .app-body { display: block !important; }
+    body { background: white; }
+  }
+
+  /* ==========================================
+     PART II — COST LEDGER STYLES
+     ========================================== */
+  .part-divider {
+    max-width: 1400px;
+    margin: 80px auto 0;
+    padding: 0 32px;
+  }
+
+  .part-divider-inner {
+    border-top: 4px solid var(--ink);
+    padding-top: 48px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 32px;
+    align-items: end;
+  }
+
+  .part-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 200;
+    font-style: italic;
+    font-size: 80px;
+    line-height: 0.8;
+    color: var(--accent);
+  }
+
+  .part-title h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+
+  .part-title h2 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .part-title p {
+    font-size: 16px;
+    color: var(--ink-soft);
+    max-width: 60ch;
+  }
+
+  .part-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  .part-meta strong {
+    color: var(--ink);
+    display: block;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    margin-top: 4px;
+  }
+
+  /* INTRO BLOCK */
+  .ledger-intro {
+    max-width: 1400px;
+    margin: 56px auto 0;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+
+  .ledger-lede {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    line-height: 1.45;
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  .ledger-lede em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .ledger-notes {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+
+  .ledger-notes p {
+    margin-bottom: 12px;
+  }
+
+  .ledger-notes strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ASSUMPTIONS */
+  .assumptions {
+    max-width: 1400px;
+    margin: 56px auto 0;
+    padding: 0 32px;
+  }
+
+  .assumptions-inner {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    padding: 28px 32px;
+  }
+
+  .assumptions-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .assumptions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .assumption {
+    color: var(--ink-soft);
+  }
+
+  .assumption strong {
+    display: block;
+    color: var(--ink);
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  /* LEDGER TABLE */
+  .ledger-section {
+    max-width: 1400px;
+    margin: 56px auto 0;
+    padding: 0 32px;
+  }
+
+  .ledger-title-block {
+    margin-bottom: 32px;
+  }
+
+  .ledger-title-main {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 32px;
+    letter-spacing: -0.015em;
+    margin-bottom: 8px;
+  }
+
+  .ledger-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+  }
+
+  .ledger-table thead th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    padding: 16px 20px;
+    text-align: left;
+    background: var(--bg-deep);
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .ledger-table thead th.right { text-align: right; }
+  .ledger-table thead th.center { text-align: center; }
+
+  .ledger-table tbody tr {
+    border-bottom: 1px solid var(--rule-soft);
+    transition: background 0.15s;
+  }
+
+  .ledger-table tbody tr:hover { background: var(--highlight); }
+  .ledger-table tbody tr:last-child { border-bottom: 2px solid var(--ink); }
+
+  .ledger-table td {
+    padding: 18px 20px;
+    vertical-align: top;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .ledger-table td.col-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    width: 36px;
+    padding-top: 22px;
+    letter-spacing: 0.05em;
+  }
+
+  .ledger-table td.col-cat { width: 14%; }
+
+  .cat-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.2;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .cat-name a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dashed var(--rule);
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .cat-name a:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .cat-job {
+    font-size: 11px;
+    color: var(--ink-muted);
+    line-height: 1.4;
+    font-style: italic;
+  }
+
+  .ledger-table td.col-app { width: 28%; }
+
+  .app-name {
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+
+  .app-tier {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent-deep);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .app-alts {
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-top: 6px;
+    line-height: 1.45;
+  }
+
+  .ledger-table td.col-users {
+    width: 14%;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .user-count {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .user-note {
+    font-size: 10px;
+    color: var(--ink-muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .ledger-table td.col-rate {
+    width: 16%;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .rate-amount {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .rate-detail {
+    font-size: 10px;
+    color: var(--ink-muted);
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+  }
+
+  .ledger-table td.col-annual {
+    width: 14%;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    padding-top: 22px;
+  }
+
+  .ledger-table tfoot tr { background: var(--ink); }
+
+  .ledger-table tfoot td {
+    color: var(--bg);
+    padding: 24px 20px;
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .ledger-table tfoot td.total-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--bg-card);
+  }
+
+  .ledger-table tfoot td.total-amount {
+    text-align: right;
+    font-size: 32px;
+    font-weight: 600;
+    font-family: 'Fraunces', serif;
+    color: var(--bg);
+  }
+
+  .ledger-table tfoot td.total-amount em {
+    color: #f0a4a8;
+    font-style: normal;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* SUMMARY CARDS */
+  .summary-section {
+    max-width: 1400px;
+    margin: 64px auto 0;
+    padding: 0 32px;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
+
+  .summary-card {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    padding: 32px 28px;
+    position: relative;
+  }
+
+  .summary-card.feature {
+    background: linear-gradient(135deg, var(--ink) 0%, #2a3151 100%);
+    color: var(--bg);
+    border: none;
+  }
+
+  .summary-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+
+  .summary-card.feature .summary-label { color: #c9a4a8; }
+
+  .summary-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  .summary-card.feature .summary-num { color: var(--bg); }
+
+  .summary-num em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .summary-card.feature .summary-num em { color: #f0a4a8; }
+
+  .summary-card .summary-text {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .summary-card.feature .summary-text { color: rgba(243, 237, 226, 0.85); }
+
+  /* CAVEATS */
+  .caveats-section {
+    max-width: 1400px;
+    margin: 64px auto 0;
+    padding: 0 32px;
+  }
+
+  .caveats {
+    padding: 32px;
+    background: linear-gradient(135deg, rgba(184, 35, 47, 0.05), rgba(212, 105, 31, 0.04));
+    border: 1px solid rgba(184, 35, 47, 0.18);
+    border-left: 4px solid var(--accent);
+  }
+
+  .caveats-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .caveats-label::before {
+    content: '!';
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Fraunces', serif;
+  }
+
+  .caveats h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+
+  .caveats-list {
+    columns: 2;
+    column-gap: 40px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+
+  .caveats-list p {
+    margin-bottom: 14px;
+    break-inside: avoid;
+  }
+
+  .caveats-list strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* RESPONSIVE OVERRIDES FOR LEDGER */
+  @media (max-width: 980px) {
+    .ledger-table thead th.col-rate-h,
+    .ledger-table td.col-rate { display: none; }
+    .ledger-table td.col-app { width: 35%; }
+    .summary-grid { grid-template-columns: 1fr; }
+    .caveats-list { columns: 1; }
+    .ledger-intro { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 700px) {
+    .part-divider { padding: 0 20px; }
+    .part-divider-inner { grid-template-columns: 1fr; gap: 16px; }
+    .part-meta { text-align: left; }
+    .part-num { font-size: 56px; }
+    .part-title h2 { font-size: 36px; }
+    .ledger-intro, .assumptions, .ledger-section, .summary-section, .caveats-section { padding: 0 20px; }
+    .ledger-table { display: block; overflow-x: auto; }
+    .ledger-table thead th.col-users-h,
+    .ledger-table td.col-users { display: none; }
+    .ledger-table td { padding: 14px 12px; font-size: 13px; }
+    .cat-name { font-size: 14px; }
+    .ledger-table td.col-annual { font-size: 14px; padding-top: 14px; }
+    .ledger-table tfoot td.total-amount { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ============================================
+     HEADER + STICKY NAV
+     ============================================ -->
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <div class="brand-text">
+        Enterprise Software
+        <small>A Field Reference &amp; Cost Ledger</small>
+      </div>
+    </div>
+    <div class="search-box">
+      <input type="text" id="search" placeholder="Search must-haves…" autocomplete="off">
+    </div>
+  </div>
+  <nav class="quicknav">
+    <div class="quicknav-inner">
+      <a href="#domain-customer">Customer</a>
+      <a href="#crm">CRM</a>
+      <a href="#sales">Sales</a>
+      <a href="#bd">BD</a>
+      <a href="#social">Social</a>
+      <a href="#analytics">Analytics</a>
+      <a href="#seo">SEO</a>
+      <span class="quicknav-divider"></span>
+      <a href="#domain-people">People</a>
+      <a href="#ta">Talent</a>
+      <a href="#hris">HRIS</a>
+      <a href="#culture">Culture</a>
+      <span class="quicknav-divider"></span>
+      <a href="#domain-governance">Governance</a>
+      <a href="#legal">Legal</a>
+      <a href="#compliance">Compliance</a>
+      <a href="#finance">Finance</a>
+      <span class="quicknav-divider"></span>
+      <a href="#domain-ops">Operations</a>
+      <a href="#pm">PM &amp; Docs</a>
+      <a href="#chat">Chat</a>
+      <span class="quicknav-divider"></span>
+      <a href="#ledger" style="color: var(--accent); font-weight: 600;">→ Cost Ledger</a>
+    </div>
+  </nav>
+</header>
+
+<!-- ============================================
+     HERO
+     ============================================ -->
+<section class="hero">
+  <div class="hero-eyebrow">A Field Reference for Building Enterprise Software</div>
+  <h1>The <em>must-haves</em>, and what they cost when you buy them.</h1>
+  <p class="hero-lede">
+    Two halves of the same conversation. The first is what each of fourteen enterprise applications must do to earn its place — every feature justified by what breaks if it isn't there. The second is what those same applications cost a 100-person company every year, in real dollars, from the leading commercial vendor in each category. Use the first to scope what to build. Use the second to make the case for building it.
+  </p>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <div class="meta-num"><em>14</em></div>
+      <div class="meta-label">Application Categories</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-num">200+</div>
+      <div class="meta-label">Curated Must-Haves</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-num"><em>$638K</em></div>
+      <div class="meta-label">Annual Stack Cost</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-num">$3.7M</div>
+      <div class="meta-label">5-Year License Spend</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     DOMAIN 1: CUSTOMER-FACING
+     ============================================ -->
+<section class="domain" id="domain-customer">
+  <div class="domain-header">
+    <div class="domain-num">i</div>
+    <div class="domain-title">
+      <h2>Customer-Facing Systems</h2>
+      <p>The systems that find, win, and serve customers — and the analytics layer that proves any of it is working.</p>
+    </div>
+  </div>
+</section>
+
+<div class="app-grid">
+
+<!-- CRM -->
+<article class="app" id="crm">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">01 / CRM</div>
+    <div class="app-title">
+      <h3>Customer Relationship Management</h3>
+      <p class="app-job">The single record of every customer interaction across sales, marketing, and support — so the company stops repeating itself to its own customers.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Data Foundation</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Account, contact &amp; lead model</div><div class="item-need">Leads convert into contacts and accounts without orphaning history. <strong>Dedup at import and on entry.</strong> The single thing CRMs get wrong most often.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Custom fields and objects</div><div class="item-need">Every business has data the schema didn't anticipate. If you can't add fields without a developer, the CRM ages badly.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Relationship modeling</div><div class="item-need">Parent/child accounts, partner/reseller links, contact-to-contact connections. Real businesses are networks, not flat lists.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Sales Workflow</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Configurable pipeline</div><div class="item-need">Stages, probabilities, required fields per stage. Hardcoded pipelines frustrate every team within six months.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">05</span>Activity tracking</div><div class="item-need">Calls, emails, meetings, tasks tied to multiple records. Without this, "what's the status" becomes archaeology.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Forecasting</div><div class="item-need">Weighted pipeline, commit/best-case/worst-case categories, rep and team rollups. The number the CFO actually wants.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Quoting / CPQ basics</div><div class="item-need">Even simple line-item quotes with PDF output beat the Excel-then-email pattern that loses revenue to slow turnaround.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Marketing &amp; Service</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Lead capture &amp; routing</div><div class="item-need">Web forms, list imports, automatic assignment. Manual lead routing is where promising leads die.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Campaign tracking</div><div class="item-need">Source attribution that reveals which channels produce <strong>revenue</strong>, not just leads.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Cases / tickets</div><div class="item-need">Linked to accounts and contacts, with SLAs, queues, escalation. The customer's history with you is one history.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Customer history view</div><div class="item-need">Every interaction across sales, marketing, support visible on one timeline. <strong>This is the actual point of a CRM.</strong></div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Cross-Cutting Essentials</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Email &amp; calendar integration</div><div class="item-need">Two-way, with auto-logging. Without this, manual logging decays and the CRM becomes a fiction.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">13</span>Workflow automation</div><div class="item-need">Triggers, field updates, task creation, alerts. The hours saved compound; the consistency is what scales.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Field-level audit log</div><div class="item-need">Who changed what, when. Required for SOX, HIPAA, ITAR-adjacent environments — and good hygiene anywhere.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">15</span>SSO &amp; MFA</div><div class="item-need">Non-negotiable. The CRM holds the keys to every customer relationship the company has.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Open API + webhooks</div><div class="item-need">Without these, every adjacent system (ERP, marketing, support, BI) becomes a manual export problem.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">CRMs fail not from missing features but from <em>over-customization and poor adoption</em>. A CRM that captures 80% of activity is infinitely more valuable than one with perfect schema and 20% adoption. Discipline beats configuration.</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>Can a rep find every prior interaction with a customer in under a minute, or does it take three tabs?</li>
+        <li>Does the data the system holds match what reps actually believe about their deals?</li>
+        <li>Would the company miss this CRM if it disappeared, or just be relieved?</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+<!-- SALES APP -->
+<article class="app" id="sales">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">02 / SALES</div>
+    <div class="app-title">
+      <h3>Sales Application</h3>
+      <p class="app-job">The rep's daily cockpit — narrower than a CRM, judged on whether it makes the rep faster and more effective at closing deals, not on whether it stores everything.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Pipeline &amp; Deal Management</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Clean pipeline view</div><div class="item-need">Kanban or list, drag-to-update stages. <strong>This is the screen reps live in</strong> — bad pipeline UX = unused tool.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Deal record at a glance</div><div class="item-need">Account, contacts, value, stage, close date, next step, last activity in one place. No clicking through five tabs to see if a deal is alive.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Stage gates</div><div class="item-need">Required fields or checklists per stage so deals can't advance on vibes. Tied to a sales methodology if you have one.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Forecasting with history</div><div class="item-need">Weighted pipeline plus rep commits, with history so forecast accuracy improves. Without history, "we'll hit it" is faith.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Activity &amp; Follow-Through</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">05</span>"Next step" as first-class field</div><div class="item-need">Not buried in notes. <strong>The single best leading indicator of deal health.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Tasks &amp; reminders front and center</div><div class="item-need">Overdue items surface on the home screen. Sales lives or dies on follow-through; nothing decays in a list nobody opens.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Auto-captured activity</div><div class="item-need">Manual logging always decays. The app should capture as much email/call/meeting context as it can without rep effort.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Cadences / sequences</div><div class="item-need">Multi-step touch plans queued daily. Removes "who do I contact today" as a question reps have to answer themselves.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Communication &amp; Productivity</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Email integration with templates</div><div class="item-need">Tracking (opens, clicks, replies), send-later. Reps should never leave the app to email a prospect.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Click-to-call &amp; logging</div><div class="item-need">Recording and transcription where compliance allows. Calls are evidence; un-logged calls are amnesia.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Calendar integration with booking links</div><div class="item-need">Prospects self-schedule. Removes the email-tennis that loses deals to slower competitors.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Mobile that's actually usable</div><div class="item-need">Reps log activity from cars, airports, hallways. Voice-to-text notes are huge here. Shrunken desktop UI = abandoned tool.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Insight &amp; Close</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">13</span>Deal health signals</div><div class="item-need">Stalled deals, missing next steps, slipping close dates surfaced automatically — not buried in a report nobody runs.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Win/loss tracking</div><div class="item-need">Reason codes and notes — fuel for coaching and product feedback. Without this, the same losses repeat indefinitely.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">15</span>Quote/proposal generation</div><div class="item-need">Branded PDFs from deal data with e-signature. Deals close in the app instead of in email threads.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Order handoff to fulfillment</div><div class="item-need">No rekeying into ERP. The handoff is where deal data goes to die in most organizations.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">A sales app fails when it becomes <em>a reporting tool for management rather than a working tool for reps</em>. Every required field needs to earn its place. If reps see the app as something they fill out for the boss, adoption craters and the data becomes worthless.</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>Does this feature help the rep close faster, or know what to do next? If neither, it belongs in the CRM.</li>
+        <li>Would your top rep voluntarily use this app on a Friday afternoon to find their next move?</li>
+        <li>When forecasts miss, can you point to which deals slipped and why — or just to the gap?</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+<!-- BUSINESS DEVELOPMENT -->
+<article class="app" id="bd">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">03 / BD</div>
+    <div class="app-title">
+      <h3>Business Development</h3>
+      <p class="app-job">A workflow tool for opportunity development and follow-through, not a feature-complete CRM. The differentiator is what happens before the deal becomes a deal.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Account &amp; Opportunity Model</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Flexible account + contact model</div><div class="item-need">Many contacts per account, contacts that can move accounts without losing history, relationships captured (decision-maker vs. influencer). <strong>Most BD pain comes from rigid data models.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Customizable pipeline</div><div class="item-need">Stages, probabilities, expected-close. Every BD team defines its funnel differently — hardcoding it always frustrates someone.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Activity logging tied to opps</div><div class="item-need">"Next step" and "next step date" are first-class fields, not buried in notes. The leading indicator of opportunity health.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Discipline &amp; Workflow</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Tasks &amp; follow-up reminders</div><div class="item-need">BD lives or dies on follow-through. If overdue items don't surface, people run BD from a sticky note.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">05</span>Search across everything</div><div class="item-need">Full-text across accounts, contacts, notes, attached docs. Underrated until you cross a few thousand records.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Reporting basics out of the box</div><div class="item-need">Pipeline by stage, weighted forecast, activity per BD rep, win/loss reasons, lead-source attribution. Common questions, common answers.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Communication &amp; Documents</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Two-way email integration</div><div class="item-need">Auto-log inbound/outbound to the right record. Without this, logging decays fast and the CRM lies.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Calendar integration</div><div class="item-need">Meetings link to contacts and opportunities automatically — context preserved without manual effort.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Documents at every level</div><div class="item-need">Proposals, NDAs, spec sheets, meeting notes — attachable to account, contact, or opportunity. One source of truth per relationship.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Governance</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Audit log &amp; change history</div><div class="item-need">Who edited what, when. Catches data-quality drift; non-negotiable in regulated environments.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Role-based permissions</div><div class="item-need">Not everyone should see every deal value or every contact. Sensitive deals need sensitive access.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Clean import/export &amp; API</div><div class="item-need">Trade-show lists, broker pulls, marketing integrations. If data is hard to get in and out, the app becomes a silo.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">13</span>Mobile-friendly UI</div><div class="item-need">BD folks aren't always at a desk. Even responsive web is fine, but the workflow has to function from a phone.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Aerospace / Defense Extras</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Export-control flags</div><div class="item-need">ITAR/EAR markers on accounts and contacts, denied-party screening status, foreign-person indicators. Compliance built into the workflow, not bolted on.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">15</span>Capture management workflow</div><div class="item-need">Pre-RFP phase has its own discipline distinct from the deal pipeline. Treating capture as a stage misses the point.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Teaming-partner tracking</div><div class="item-need">Prime/sub relationships are first-class records, not buried in notes. Teaming is half the work in this market.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">Building a <em>"feature-complete CRM"</em> instead of a BD tool. The differentiator isn't the contact-fields list — it's workflow around opportunity development and follow-through.</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>For any opportunity, can you tell what the next move is and who's making it?</li>
+        <li>Does the system reflect how your BD team actually works, or how the vendor thinks they should?</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+<!-- SOCIAL MEDIA -->
+<article class="app" id="social">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">04 / SOCIAL</div>
+    <div class="app-title">
+      <h3>Social Media Management</h3>
+      <p class="app-job">Four products glued together — calendar, content studio, account hub, and listening tool. The win is the unified record of every customer touchpoint, not the size of the feature list.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Account Management</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Centralized account connection</div><div class="item-need">OAuth refresh handled gracefully. <strong>Token expiration is the #1 silent failure</strong> in social media apps — posts fail at 2am with no warning.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Brand/workspace separation</div><div class="item-need">Multiple companies or clients without cross-contamination. Each workspace owns its accounts, calendar, library, team.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Role-based permissions</div><div class="item-need">Admin, editor, contributor, approver, viewer. Critical the moment more than one person touches the accounts.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Account health view</div><div class="item-need">Connection status, posting limits, API quota. Silent failures destroy trust; visible health prevents them.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Calendar &amp; Scheduling</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">05</span>Unified calendar view</div><div class="item-need">Color-coded by account/brand/campaign, drag-to-reschedule. The home screen for most users.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Time zone handling that doesn't lie</div><div class="item-need">Schedule in audience time zone, view in user time zone, store in UTC. Sounds obvious; almost nobody gets it right.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Bulk scheduling &amp; queues</div><div class="item-need">CSV import, recurring posts, time slots that auto-fill from a content backlog. Removes manual scheduling tax.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Campaign grouping</div><div class="item-need">A product launch's twenty posts across five accounts shows as one coherent thing, not twenty disconnected items.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Content Creation</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Composer with per-platform previews</div><div class="item-need">Written once, tailored per platform. Show what each will actually look like before publishing — character limits, formatting, hashtag conventions.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Media library with rights tracking</div><div class="item-need">Central asset store, tagging, search, version history, license expiration. No more "where's that hero image" in Slack.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Approval workflows</div><div class="item-need">Drafts route to reviewers, comments inline, version history, locked-once-approved. Non-negotiable for regulated industries.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">12</span>UTM builder &amp; link shortening</div><div class="item-need">Every link trackable without manual URL surgery. The link IS the analytics.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Listening &amp; Engagement</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">13</span>Unified inbox</div><div class="item-need">Comments, DMs, mentions, tags from all accounts in one stream. Assignable, with status and notes — so nothing falls through.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Brand mention tracking</div><div class="item-need">Beyond your own tagged mentions — keyword monitoring across public posts, with sentiment classification.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">15</span>Crisis mode</div><div class="item-need">Pause all scheduled posts across all accounts with one click. <strong>Quietly essential</strong> when something blows up.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Alert rules</div><div class="item-need">Mention spikes, negative sentiment clusters, high-follower mentions — routed to email/Slack/SMS so PR doesn't find out from Twitter trending.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Reliability &amp; Governance</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">17</span>Reliable scheduled posting</div><div class="item-need">Retry logic, clear failure notifications. <strong>The single most important technical job</strong> of the app.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">18</span>SSO, MFA, audit log</div><div class="item-need">You're holding the keys to every brand account a company owns. Treat it that way.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">19</span>Two-person rule for high-risk accounts</div><div class="item-need">A post can't go live without a second approver. Saves careers when something looks wrong at 11pm.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">"We built a scheduler and bolted listening on" — where the two halves don't share data, so a mention and a scheduled reply about that mention live in different worlds. <em>The win is the unified record</em>: one customer, all their interactions visible in one place.</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>When a customer DMs you, can you see every prior interaction with them across every channel?</li>
+        <li>When a scheduled post fails, who finds out — your team, or the marketing director's boss?</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+<!-- WEB ANALYTICS -->
+<article class="app" id="analytics">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">05 / ANALYTICS</div>
+    <div class="app-title">
+      <h3>Web Analytics</h3>
+      <p class="app-job">Judged on one thing: does it answer the questions stakeholders actually ask, fast and accurately. Pretty dashboards with bad data are worse than plain numbers that are right.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Data Collection</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Reliable async tag</div><div class="item-need">Loads asynchronously, doesn't block rendering, degrades gracefully on failure. Page weight matters — keep it small.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Server-side collection option</div><div class="item-need">First-party data that survives ad blockers, ITP, and cookie restrictions. <strong>Increasingly table stakes</strong>, not optional.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Event-based model</div><div class="item-need">Pageviews are one event type. Clicks, form submits, scrolls, video plays, custom business events all live in the same model.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Tag manager support</div><div class="item-need">Non-developers deploy events without a release cycle. Otherwise every measurement question becomes an engineering ticket.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Identity &amp; Sessions</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">05</span>User identification</div><div class="item-need">Anonymous ID by default, attach known user ID on login. Pre-login and post-login activity stitch into one user.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Cross-device stitching</div><div class="item-need">When a user logs in on multiple devices, the journey is one journey — not three disconnected ones.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Reporting &amp; Analysis</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Custom report builder</div><div class="item-need">Drag dimensions and metrics, save, share. Without this, every question becomes a ticket to the analytics team.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Funnel analysis</div><div class="item-need">Multi-step path, drop-off rates, segmentable. Where the conversion problem actually is, not where you think it is.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Cohort analysis</div><div class="item-need">Retention curves by acquisition week/month/source. <strong>The clearest view of whether the product is getting stickier.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Attribution modeling</div><div class="item-need">First-touch, last-touch, linear, data-driven. Don't lie about which is "right" — let users compare.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Segmentation</div><div class="item-need">Ad-hoc filters and saved segments. Compare cohorts side by side without rebuilding the report each time.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Quality &amp; Trust</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Bot &amp; spam filtering</div><div class="item-need">Bad data poisons every conversation. Known-bot exclusion plus customizable rules.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">13</span>Anomaly detection</div><div class="item-need">Alert when traffic, conversion, or revenue swings beyond normal. Catches both real events and broken tracking.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Sampling transparency</div><div class="item-need">If results are sampled, say so prominently. Hidden sampling is how vendors lie politely.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">15</span>Annotations</div><div class="item-need">Mark deploys, campaigns, outages on the timeline. So six months later, anomalies have context.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Privacy &amp; Integration</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Consent management integration</div><div class="item-need">Events suppress or anonymize based on consent state. The compliance baseline, not a nice-to-have.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">17</span>PII detection &amp; redaction</div><div class="item-need">Most compliance failures are accidents — PII in URLs, in event params. Auto-detection beats manual policy.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">18</span>Raw data export</div><div class="item-need">BigQuery, Snowflake, S3. <strong>The serious analyses always end up in SQL eventually</strong> — if you can't get the raw data out, you're stuck with the vendor's interpretation.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">19</span>Data residency options</div><div class="item-need">EU storage, US storage. Increasingly required for enterprise sales — not a nice-to-have, a procurement gate.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">Two failure modes. <em>Tracking everything and analyzing nothing</em> — a 200-event taxonomy nobody can navigate. And <em>pretty dashboards with bad data</em> — validation and debugging matter more than another visualization type.</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>When a stakeholder asks "why did conversions drop yesterday," can someone answer in 15 minutes with confidence?</li>
+        <li>If your analytics tool disappeared today, what's the first metric people would actually miss?</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+<!-- SEO -->
+<article class="app" id="seo">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">06 / SEO</div>
+    <div class="app-title">
+      <h3>SEO &amp; Search Visibility</h3>
+      <p class="app-job">Find what to fix, prove the work is moving the needle, and get the right things in front of engineering, content, and execs in language each can act on.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Keyword &amp; Rank Tracking</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Keyword database with intent</div><div class="item-need">Volume, trend, difficulty, intent classification, SERP feature presence. The basis for prioritization that isn't guessing.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Daily rank tracking by location/device</div><div class="item-need">Country, state, city for local; desktop and mobile separately. Historical depth — 90 days isn't enough.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>SERP feature tracking</div><div class="item-need">When you own the featured snippet or PAA — and when you lose it. <strong>Clicks are increasingly in the features, not the blue links.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Cannibalization detection</div><div class="item-need">Multiple URLs ranking for the same query split authority. Visible cannibalization is fixable; invisible cannibalization isn't.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Technical SEO</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">05</span>JS-rendering crawler</div><div class="item-need">Respects robots.txt, handles modern frameworks, scales to large sites. Without JS rendering, you see what users see — but not what Google sees.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Issue prioritization</div><div class="item-need">Not "1,200 problems" but "these 8 affect 80% of revenue templates." <strong>Severity × scope × business impact, not raw count.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Log file analysis</div><div class="item-need">What Googlebot is actually crawling vs. what you want crawled. The most underused diagnostic in SEO.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Core Web Vitals at template level</div><div class="item-need">LCP, INP, CLS by template, not just sample URLs. Field data plus lab data — both, not either.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Indexation analysis</div><div class="item-need">What's indexed vs. not, with reasons. Index bloat dilutes authority; missing indexation hides revenue.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Content &amp; Backlinks</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Content decay detection</div><div class="item-need">Pages losing traffic, with likely causes — algorithm update, freshness, lost links, competitor takeover. Refresh decisions made on data, not feelings.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Content gap analysis</div><div class="item-need">Keywords competitors rank for and you don't, prioritized by value. The to-do list for content strategy.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Link gap analysis</div><div class="item-need">Sites linking to competitors but not you. Targeted, achievable outreach beats spray-and-pray.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">13</span>Internal linking analysis</div><div class="item-need">Anchor text distribution, link depth, money-page authority flow. The free SEO lever most teams ignore.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">AI Search Era</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">14</span>AI Overview tracking</div><div class="item-need">When you're cited, when competitors are cited, what queries trigger AI answers. The new top-of-funnel reality.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">15</span>LLM citation tracking</div><div class="item-need">Visibility in ChatGPT, Perplexity, Gemini for relevant queries. Methodologies are imperfect; the tool should be honest about that.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">16</span>AI crawler analytics</div><div class="item-need">GPTBot, ClaudeBot, PerplexityBot, Google-Extended visibility and control. You can't optimize for what you can't see.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Reporting &amp; Workflow</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">17</span>Algorithm update tracking</div><div class="item-need">Confirmed and likely updates overlaid on your performance. Anomalies have explanations; explanations have evidence.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">18</span>Issue tracking with project mgmt export</div><div class="item-need">Findings turn into tickets exportable to Jira/Asana — not stuck in the SEO tool nobody else opens.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">19</span>Revenue attribution</div><div class="item-need">Connecting organic search to pipeline and revenue. <strong>The gap between rankings and revenue is where SEO programs lose budget battles.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">20</span>GSC reconciliation honesty</div><div class="item-need">When tool numbers differ from Search Console, the tool should explain why — not pretend its number is right.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content"><em>Vanity dashboards disconnected from revenue.</em> The tool tracks 50,000 keywords, shows beautiful upward trends, and the CFO still kills the budget because nobody can answer "how much did SEO contribute to pipeline." Tracking the wrong things at high resolution is worse than tracking the right things imperfectly.</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>Can the SEO team produce a one-page report tying organic search to pipeline that survives CFO scrutiny?</li>
+        <li>When a ranking drops, can someone diagnose root cause in an hour?</li>
+        <li>When 1,000 issues are found, can the team say "these 5 are this quarter's priorities" — and be approximately right?</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+</div>
+
+<!-- ============================================
+     DOMAIN 2: PEOPLE & CULTURE
+     ============================================ -->
+<section class="domain" id="domain-people">
+  <div class="domain-header">
+    <div class="domain-num">ii</div>
+    <div class="domain-title">
+      <h2>People &amp; Culture Systems</h2>
+      <p>Hiring the right people, holding the system of record, and building the cultural fabric that makes employees stay.</p>
+    </div>
+  </div>
+</section>
+
+<div class="app-grid">
+
+<!-- TALENT ACQUISITION -->
+<article class="app" id="ta">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">07 / TALENT</div>
+    <div class="app-title">
+      <h3>Talent Acquisition</h3>
+      <p class="app-job">Find the right people, move them through a process that doesn't lose or insult them, produce hires that perform — and generate the evidence that the process was fair.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Requisitions &amp; Sourcing</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Requisition workflow with HRIS link</div><div class="item-need">Tied to a budgeted position, not a free-floating headcount request. Approval routing by type and seniority — finance and HR aligned.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Multi-channel job posting</div><div class="item-need">One-click distribution to LinkedIn, Indeed, Glassdoor, niche boards. Centralized response handling — applicants don't disappear into job-board black holes.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Career site &amp; portal</div><div class="item-need">Branded, mobile-first, fast. <strong>Every second of load time costs candidates.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Talent pool / database</div><div class="item-need">Every prior candidate, with the right to be found again on relevant roles. Privacy controls per jurisdiction.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Application &amp; Candidate Experience</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">05</span>Mobile-first apply flow</div><div class="item-need">Short, with resume parsing, optional fields actually optional. <strong>Application abandonment is the single largest leak in the funnel.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Status visibility for candidates</div><div class="item-need">Realistic timelines visible to the candidate. Silence produces Glassdoor reviews; transparency produces trust.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Self-service scheduling</div><div class="item-need">Candidates pick from interviewer availability. Removes the email-tennis that costs candidates to faster competitors.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Decline with dignity</div><div class="item-need">Personalized rejections, with timing that respects the candidate's life. Candidates remember; networks talk.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Structured Hiring</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Interview kits per role</div><div class="item-need">Pre-loaded resume, JD, scorecard, prior feedback. Interviewers prepared, not improvising.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Structured scorecards</div><div class="item-need">Required ratings on must-have competencies, behavioral evidence captured. <strong>Unstructured interviews are the most reliable source of bias.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Hidden scorecards before debrief</div><div class="item-need">Submissions invisible to others until all in. Stops anchoring on the highest-status voice in the room.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Skills assessments integrated</div><div class="item-need">Coding, writing, work samples — appropriate timing in the funnel, stored as part of the record.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Offer &amp; Onboarding Handoff</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">13</span>Offer approval workflow</div><div class="item-need">Approval matrix by level, comp, equity. With pay-band lookup and internal-equity check before the offer goes out.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Pay transparency support</div><div class="item-need">Posted ranges by jurisdiction, with rules engine for what's required where. Compliance built into workflow.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">15</span>E-signature integration</div><div class="item-need">DocuSign or similar, with completion tracking. Executed offer back in the candidate record.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Clean transition to HRIS</div><div class="item-need">No re-keying. Candidate becomes employee with history preserved. Day-one readiness — laptop works, accounts work, manager knows.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">DEI &amp; Compliance</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">17</span>Adverse impact analysis</div><div class="item-need">Selection rates by protected class, four-fifths rule monitoring. With statistical honesty about small-sample noise.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">18</span>OFCCP/EEOC compliance</div><div class="item-need">Required data, applicant definition, AAP support. The documentation that audit demands, generated automatically.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">19</span>AI bias auditing &amp; disclosure</div><div class="item-need">NYC Local Law 144, EU AI Act compliance. Any AI in the hiring path must be explainable, audited, and disclosed to candidates.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Quality Loop</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">20</span>Quality of hire tracking</div><div class="item-need">First-year retention, performance rating, time to productivity by source. <strong>Closes the loop between sourcing and outcome</strong> — without it, sourcing investment is guessing.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">21</span>Source effectiveness by quality</div><div class="item-need">Not just by application volume. The cheap source that produces no hires is more expensive than the premium source that produces good ones.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">Three predictable failures: <em>candidate experience treated as a feature instead of the product</em>; <em>structured hiring degrading into theater</em> (scorecards filled out post-hoc); and <em>metrics driving the wrong behaviors</em> (time-to-fill becomes North Star, quality drops). The software can require the artifacts; it can't supply the discipline.</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>Can a candidate get a status update without emailing a recruiter?</li>
+        <li>When the funnel shows adverse impact, does it lead to investigation or defensive explanations?</li>
+        <li>Can someone tell you the quality-of-hire of last year's class, by source and recruiter — in numbers, not anecdotes?</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+<!-- HRIS -->
+<article class="app" id="hris">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">08 / HRIS</div>
+    <div class="app-title">
+      <h3>Human Resources Information System</h3>
+      <p class="app-job">The system of record for employees. Every other people-related system depends on its data being correct — garbage here is garbage everywhere.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Core Record</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Single employee record</div><div class="item-need">Source of truth. Every downstream system reads from here. Two records for one person breaks every report.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Position vs. person separation</div><div class="item-need">Job codes, levels, FLSA classification kept distinct from the person filling them. Lets you handle vacancies, reorgs, and acting roles cleanly.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Effective-dated everything</div><div class="item-need">Every change has effective date, entered date, reason code. <strong>Without this you can't answer "what was true on April 1"</strong> and audits become impossible.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Org structure with history</div><div class="item-need">Reporting, dotted lines, cost centers, locations, entities — with effective dating so the org chart of any past date is reconstructible.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Lifecycle</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">05</span>Onboarding workflow</div><div class="item-need">Pre-boarding tasks, document collection (I-9, W-4, direct deposit), equipment provisioning, day-one checklist. The handoff that determines first-week experience.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Job change workflows</div><div class="item-need">Promotions, transfers, pay changes — with approvals and effective dating. Casual changes corrupt the record.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Leave of absence tracking</div><div class="item-need">FMLA, parental, medical, military — eligibility calculations, return-to-work, disability admin integration. Where compliance failures live.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Offboarding automation</div><div class="item-need">Final pay, equipment return, access revocation triggers, COBRA, exit interview. Same-day access termination is the security baseline.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Compensation &amp; Payroll</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Comp structure with full history</div><div class="item-need">Salary, hourly, components separately tracked. The data feeding pay equity analysis and merit cycles.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Compensation planning</div><div class="item-need">Merit cycles with budgets, manager proposals, approval routing. Bulk execution with effective dates — not 500 individual change requests.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Native or tightly-integrated payroll</div><div class="item-need">Gross-to-net, multi-state, multi-country, year-end forms. The HRIS-payroll seam is where data goes to die.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Pay equity analysis</div><div class="item-need">Statistical tools that don't lie about confidence. Catches the disparities that become lawsuits.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Time, Benefits &amp; Talent</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">13</span>PTO accruals with policy variations</div><div class="item-need">Eligibility rules, carryover, cash-out — by country, jurisdiction, tenure. Get this wrong and you owe money or get sued.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Benefits open enrollment</div><div class="item-need">Annual cycle with decision support, plan comparison, dependent verification. Carrier EDI feeds — manual carrier enrollment is where data dies.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">15</span>Performance review cycles</div><div class="item-need">Goals, check-ins, formal reviews, calibration. Configurable to whatever methodology HR has chosen this year.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Required training tracking</div><div class="item-need">Compliance courses, certification expirations. Without this, regulators ask and you can't answer.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Self-Service &amp; Reporting</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">17</span>Employee &amp; manager self-service</div><div class="item-need">Update address, view paystubs, request time off, approve team changes. <strong>Otherwise HR runs on email and Slack tickets.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">18</span>HR case management</div><div class="item-need">Tickets with SLAs, knowledge base, audit trail. Stops HR from being a black hole for employee questions.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">19</span>Field-level audit log</div><div class="item-need">Every change, with attribution and timestamps. Mandatory for SOX; sensible everywhere.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">20</span>Custom reports without tickets</div><div class="item-need">Non-admins build their own. Headcount, turnover, time-to-fill, comp, diversity — answerable without filing a request.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Security &amp; Integration</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">21</span>Field-level access controls</div><div class="item-need">SSN, comp, performance, medical info each gated separately. The data sensitivity demands it.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">22</span>Identity provider integration</div><div class="item-need">SCIM provisioning so employee changes flow into application access automatically. Joiners-movers-leavers handled.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">23</span>API for the surrounding stack</div><div class="item-need">ATS, LMS, performance, payroll, benefits, identity, security, T&amp;E. The HRIS feeds 15+ adjacent tools.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">24</span>Sandbox environment</div><div class="item-need">HRIS changes break payroll if untested. Non-negotiable for any serious deployment.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">Three failures: treating it as a payroll tool with HR bolted on (or vice versa); over-customizing until upgrades break; deploying without owning data quality. <em>The cleanest schema produces wrong reports if managers don't enter changes correctly and on time.</em></div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>When finance asks "headcount as of last quarter, by cost center, FT vs. PT, with avg tenure and salary" — can someone answer in 10 minutes from a single source?</li>
+        <li>If that question kicks off a 3-day reconciliation between HR/payroll/finance, the system isn't actually the system of record yet.</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+<!-- CULTURE -->
+<article class="app" id="culture">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">09 / CULTURE</div>
+    <div class="app-title">
+      <h3>Culture &amp; Recognition</h3>
+      <p class="app-job">Make appreciation visible, frequent, and tied to what the company actually values — without becoming gamified surveillance theater that employees see through within a quarter.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Recognition Mechanics</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Peer-to-peer as foundation</div><div class="item-need">Anyone recognizes anyone, not just top-down. <strong>Top-down-only is the most reliable way to make a program feel performative.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Public feed with reactions</div><div class="item-need">Visibility is what produces social reinforcement. Private-only is a thank-you note, not a culture lever.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Tagged to company values</div><div class="item-need">Each recognition pinned to an actual company value. <strong>The mechanism that turns recognition into culture-shaping</strong> rather than a generic kudos board.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Specificity prompts</div><div class="item-need">"What did they do, what was the impact, which value." Quality of recognition matters more than volume.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Rewards &amp; Incentives</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">05</span>Points-based with budgets</div><div class="item-need">Manager and peer allocations refreshed monthly. Without budgets, points either inflate to meaninglessness or deflate to nothing.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Reward catalog with regional honesty</div><div class="item-need">Gift cards, merchandise, charitable donations, custom rewards — with regional availability handled honestly.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Service awards / milestones</div><div class="item-need">Anniversary recognition at meaningful intervals. "No one acknowledged my 5-year" pain is widespread and entirely preventable.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Tax handling baked in</div><div class="item-need">Taxable rewards properly reported (W-2 imputation, P11D). Without this, payroll and recognition reconcile by hand quarterly.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Listening &amp; Feedback</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Continuous feedback (separate from reviews)</div><div class="item-need">Peer, upward, 360 — on demand, developmental in framing. Feedback shouldn't be a once-a-year ceremony.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Pulse surveys with rotating banks</div><div class="item-need">Short, frequent, with rotating questions so the same questions don't get the same answers from fatigue.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Lifecycle surveys</div><div class="item-need">Onboarding (30/60/90), exit, post-promotion, post-restructure. Feedback at the moments when it's most diagnostic.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Action planning &amp; follow-through</div><div class="item-need">Manager dashboards, action plans, communication back to teams. <strong>Surveys without action are worse than no surveys</strong> — they signal the company asks but doesn't listen.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Equity &amp; Trust</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">13</span>Recognition equity analysis</div><div class="item-need">Does recognition flow disproportionately to certain demographics, levels, in-groups? <strong>The most important DEI lens on recognition data.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Real anonymity protection</div><div class="item-need">Small-team aggregation rules, no demographic combinations that re-identify. The technical implementation must match the marketing message.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">15</span>Wall between development &amp; evaluation data</div><div class="item-need">Recognition and feedback used for development must not flow into performance evaluation. Once employees suspect leak, every signal degrades.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Connection &amp; Communication</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Rich employee directory</div><div class="item-need">Pronouns, time zone, working style, fun facts. Humanizes colleagues — particularly important for distributed teams.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">17</span>Q&amp;A platform for all-hands</div><div class="item-need">Upvoting so most-asked questions surface. Anonymous-asking option. Otherwise the same five voices dominate.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">18</span>ERG &amp; community group support</div><div class="item-need">Operational backbone — group spaces, events, budgets, membership. Without it, ERGs exist on paper but don't function.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">19</span>Chat &amp; HRIS integration</div><div class="item-need">Recognition flows in chat where work conversation actually happens. SCIM provisioning so the employee data is always current.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">Three failures: <em>performative theater</em> employees see through (generic values, hollow "great job!" recognitions, executives who never recognize); <em>transactional points economy</em> where employees calculate point values and recognition becomes about the reward; and <em>over-instrumented surveillance</em> (sentiment analysis, network analysis, manager dashboards used in performance decisions). The same data feels collaborative for development and Orwellian for evaluation.</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>Would employees still use the recognition system if there were no points or rewards?</li>
+        <li>When the survey identifies a problem, can someone point to specific actions and outcomes a year later?</li>
+        <li>If you removed the app for a month, would the culture suffer or just feel quieter?</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+</div>
+
+<!-- ============================================
+     DOMAIN 3: GOVERNANCE
+     ============================================ -->
+<section class="domain" id="domain-governance">
+  <div class="domain-header">
+    <div class="domain-num">iii</div>
+    <div class="domain-title">
+      <h2>Governance Systems</h2>
+      <p>Legal, compliance, and finance — the systems that keep the company out of trouble and produce numbers that survive scrutiny.</p>
+    </div>
+  </div>
+</section>
+
+<div class="app-grid">
+
+<!-- LEGAL -->
+<article class="app" id="legal">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">10 / LEGAL</div>
+    <div class="app-title">
+      <h3>Corporate Legal</h3>
+      <p class="app-job">Manage risk, contracts, and legal work across the company without being so heavy that the business routes around it. The win is fewer surprises, not more process.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Matters &amp; Intake</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Matter as central object</div><div class="item-need">Type, status, owner, jurisdiction, related entities. Everything else hangs off matters. Without this, legal work is email threads.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Structured intake workflow</div><div class="item-need">Triage rules that route to the right team. <strong>Prevents the "drive-by email to the GC" pattern</strong> that bypasses the system entirely.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Privilege flagging</div><div class="item-need">Privileged work product technically distinguishable, not just labeled. Required for defending privilege claims in litigation.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Contract Lifecycle (CLM)</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Contract repository with metadata</div><div class="item-need">Full-text search, OCR, structured fields (counterparty, value, term, renewal, jurisdiction). Without this, contracts are findable only by the person who signed them.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">05</span>Clause library &amp; playbook</div><div class="item-need">Pre-approved language with fallback positions. <strong>The single biggest accelerator</strong> for repetitive contract work.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Self-serve contracts for the business</div><div class="item-need">NDAs, simple SOWs, vendor agreements generated with guardrails. Legal isn't the bottleneck on routine paper.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Approval workflows by risk</div><div class="item-need">Routing on contract type, value, deviation from playbook. Conditional approvers (security, finance, export control, tax).</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Obligation extraction &amp; tracking</div><div class="item-need">Renewal dates, notice periods, audit rights, MFN, change-of-control. <strong>The post-signature life of a contract is where value leaks.</strong></div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Entities &amp; IP</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Entity register with org chart</div><div class="item-need">Subsidiaries, jurisdictions, officers, directors, with effective dating. Reconstruct corporate structure as of any past date.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Annual filing tracking</div><div class="item-need">Franchise tax, registered agent, with deadlines and proof of filing. <strong>Missed filings are an expensive form of carelessness.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">11</span>IP register &amp; docketing</div><div class="item-need">Patents, trademarks, domains with key dates. The deadline calendar that keeps rights from lapsing.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Litigation &amp; Outside Counsel</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Legal hold management</div><div class="item-need">Scope, custodians, hold notices with acknowledgment, periodic reissue. Required for any litigation-prone organization.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">13</span>E-billing with guideline enforcement</div><div class="item-need">LEDES ingestion, automated rejection of block billing and rate violations. Where legal departments justify their existence to finance.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Matter budgets with alerts</div><div class="item-need">Budget vs. actual at the matter level, with threshold alerts. Without this, surprises arrive as invoices.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Compliance &amp; Knowledge</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">15</span>Policy library with attestation</div><div class="item-need">Version control, ownership, review cadence, employee acknowledgment tracking. Required for regulated environments.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Investigation case management</div><div class="item-need">Restricted access by case, hotline integration, investigation workflow. Most cases must be invisible to most of the legal team.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">17</span>Word/Outlook integration</div><div class="item-need">Attorneys live in those tools. <strong>An app that forces them out will be abandoned.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">18</span>AI-assisted contract review</div><div class="item-need">Clause extraction, risk flagging, comparison against playbook. Single biggest productivity lever — but must never let users skip review on high-stakes work.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Aerospace / Defense Extras</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">19</span>ITAR/EAR matter classification</div><div class="item-need">Foreign-person access controls on documents and matters. Empowered-official approval workflows. License/TAA/MLA tracking.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">20</span>Technology Control Plan (TCP) management</div><div class="item-need">TCP integration mapping projects to controlled programs. Deemed-export logging. The compliance backbone for export-controlled work.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">Two failures: becoming a <em>filing cabinet</em> (everything stored, nothing actionable, deadlines missed); or becoming a <em>process bottleneck</em> (every paper requires workflow, business sends it from personal Gmail instead). Automation of the routine is what frees attention for genuinely judgment-requiring work.</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>Does the business voluntarily route work through the system because it's faster than going around it?</li>
+        <li>If legal has to police usage, the design has already lost.</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+<!-- COMPLIANCE -->
+<article class="app" id="compliance">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">11 / COMPLIANCE</div>
+    <div class="app-title">
+      <h3>Corporate Compliance</h3>
+      <p class="app-job">Make sure the company knows its obligations, can prove it's meeting them, and can detect and respond when it isn't. Documentation isn't compliance; behavior is.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Program Foundation</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Regulatory &amp; obligation register</div><div class="item-need">Every law, regulation, standard, internal policy applicable to the company. <strong>The spine of the whole program; without it, compliance is vibes.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Control framework with cross-walk</div><div class="item-need">Many-to-many mapping (one control covers multiple obligations). When ISO 27001 maps to NIST maps to SOC 2, evidence collected once satisfies all three.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Risk register with treatments</div><div class="item-need">Risks scored, owned, with mitigation plans linked to controls. The map between what could go wrong and what's being done about it.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Policy &amp; Training</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Policy library with mapping</div><div class="item-need">Linked to controls and obligations. When a regulation changes, you can find every policy that needs updating.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">05</span>Policy attestation</div><div class="item-need">Assigned by role, location, system access, with acknowledgment tracking. Evidence retention for audit.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Required training tracking</div><div class="item-need">Code of conduct, anti-bribery, export controls, privacy, with completion deadlines and recertification. Where compliance failures live in audits.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Conflict-of-interest disclosures</div><div class="item-need">Annual and event-driven, with review workflow. The annual ritual that catches the issues nobody volunteered.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Controls &amp; Testing</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Control library &amp; ownership</div><div class="item-need">Description, frequency, type, automation level, key vs. non-key. The controls that satisfy obligations, mapped to evidence.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Continuous control monitoring</div><div class="item-need">Automated checks, exceptions routed for review. Detects drift before audit catches it.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Issue / findings management</div><div class="item-need">Severity, owner, due date, evidence of closure. <strong>Aging issues are the single best predictor of a program in trouble.</strong></div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Third-Party Risk</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Vendor inventory with criticality</div><div class="item-need">Data access, system access, geographic footprint, inherent risk rating. Know who you depend on before they fail you.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Due diligence workflow</div><div class="item-need">Questionnaires, document collection (SOC 2, insurance), screening (sanctions, adverse media), risk scoring.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">13</span>Continuous monitoring</div><div class="item-need">Re-screening for sanctions hits, financial health changes, breach disclosures. Vendors change after onboarding.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Investigations &amp; Disclosure</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Whistleblower hotline integration</div><div class="item-need">Anonymous and identified intake, with legally required independence from management.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">15</span>Case management with restricted access</div><div class="item-need">Conflict screening at intake, restricted to investigation team. Most cases shouldn't be visible to most of compliance.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Privacy / DSAR workflow</div><div class="item-need">Data subject requests with intake, identity verification, fulfillment, deadline tracking. GDPR/CPRA compliance baseline.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Reporting &amp; Audit Trail</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">17</span>Tamper-evident audit trail</div><div class="item-need">Field-level change history with attribution. <strong>The most important technical feature</strong> — the compliance app itself is in scope for audit.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">18</span>Executive &amp; board dashboards</div><div class="item-need">Program health at a level a board committee can consume. Top risks, open issues, training, attestations, incidents.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">19</span>External auditor portal</div><div class="item-need">Request lists, evidence sharing with controlled access, status tracking. Cuts weeks off external audit cycles.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Aerospace / Defense Extras</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">20</span>Empowered Official workflow</div><div class="item-need">EO designation and approval routing for ITAR transactions. Required by the regulations.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">21</span>Denied/debarred party screening</div><div class="item-need">DPL, SDN, Entity List, Unverified List screening at customer, vendor, employee, visitor level — with re-screening cadence.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">22</span>CMMC / NIST 800-171 management</div><div class="item-need">Assessment scoring, POA&amp;M tracking, FAR/DFARS clause flow-down. The compliance bar for federal aerospace/defense work.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">23</span>Voluntary disclosure workflow</div><div class="item-need">For inadvertent violations of ITAR/EAR. The narrow window between "you found it" and "you have to disclose it."</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">Two failures: becoming a <em>documentation factory</em> disconnected from behavior (passes audits but the underlying behavior hasn't changed); or becoming so heavy that <em>the business routes around it</em> (controls bypassed, exceptions granted permanently). The discipline is making compliant behavior the easy path.</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>Can you answer "what's our exposure to [new regulation]" in a day, not a quarter?</li>
+        <li>When an issue is found, does it close with evidence, or does it age?</li>
+        <li>Do investigations result in remediation that prevents recurrence, or do the same root causes show up across cases over years?</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+<!-- FINANCE -->
+<article class="app" id="finance">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">12 / FINANCE</div>
+    <div class="app-title">
+      <h3>Corporate Finance</h3>
+      <p class="app-job">One core job: produce numbers that are correct, on time, and trusted. Everything else serves that.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">General Ledger Foundation</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Multi-dimensional chart of accounts</div><div class="item-need">Natural account, entity, cost center, project, product, location, intercompany. <strong>The single most consequential design decision</strong> — getting it wrong means rebuilding everything downstream.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Multi-entity, multi-currency, multi-book</div><div class="item-need">Each entity with own ledger, currency, calendar, accounting basis (GAAP, IFRS, statutory, tax) maintained in parallel.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Effective-dated everything</div><div class="item-need">Accounts, hierarchies, exchange rates, allocations. Reconstruct what was true on any past date — required for restatement and audit.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">04</span>JE workflow with separation of duties</div><div class="item-need">Preparer, reviewer, approver, with documentation and threshold-based routing. Prevents the most common SOX deficiencies.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Procure-to-Pay</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">05</span>Vendor master with controls</div><div class="item-need">Tax IDs, banking, with workflow for adds and changes. <strong>The most common payment-fraud vector if uncontrolled.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Three-way match with tolerances</div><div class="item-need">PO, receipt, invoice automated with exception workflow. Prevents duplicate and fraudulent payments.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Payment fraud controls</div><div class="item-need">Vendor bank-change verification, dual approval, callback for high-value first-time payments. The controls that prevent BEC fraud.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Order-to-Cash</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Billing engine</div><div class="item-need">Recurring, milestone, T&amp;M, usage-based, with proration and credit/rebill. Subscription and contract complexity real businesses generate.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Revenue recognition (ASC 606 / IFRS 15)</div><div class="item-need">Performance obligations, transaction price allocation, contract modifications. Critical for any subscription or long-cycle business.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Cash application with AI matching</div><div class="item-need">Automated matching of payments to invoices, exception workflow for unapplied cash. Without it, AR aging is unreliable.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Cash &amp; Treasury</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Bank account inventory</div><div class="item-need">Every account, every entity, every signer, with periodic confirmation. The "we have how many bank accounts?" problem.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Cash position &amp; forecast</div><div class="item-need">13-week rolling forecast with variance, by entity and currency. The runway question, answered with data.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">13</span>FX exposure &amp; hedging</div><div class="item-need">Identification, hedging, hedge accounting under ASC 815. For multi-currency businesses, where surprises live.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Intercompany matching &amp; elimination</div><div class="item-need">Transaction-level matching, automated elimination at consolidation. <strong>The hairball in any multi-entity organization.</strong></div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Close &amp; Consolidation</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">15</span>Close calendar with status</div><div class="item-need">Every task, owner, dependency, deadline. Aging on overdue. The visible heartbeat of the close.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Account reconciliation workflow</div><div class="item-need">Every balance sheet account every period, auto-cert for low-risk, full workflow for material. With aging on unreconciled items.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">17</span>Consolidation engine</div><div class="item-need">Multi-entity, multi-currency translation, minority interest, equity method. Audit trail of every consolidation entry.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">18</span>Flux analysis</div><div class="item-need">Variance with explanation requirements above thresholds. <strong>Automates the question of "why did this account move."</strong></div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">FP&amp;A</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">19</span>Driver-based budgeting</div><div class="item-need">Revenue from price × volume × mix, headcount from start dates and loaded costs. Beats last-year-plus-X percent.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">20</span>Rolling forecast with scenarios</div><div class="item-need">Base, upside, downside cases. Quick switching for board discussions and what-if questions.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">21</span>Workforce planning integrated with HRIS</div><div class="item-need">Position management, hiring plan tracking, fully-loaded cost per employee. The biggest expense planned at the right grain.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Reporting &amp; Audit</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">22</span>Drill-through to transaction</div><div class="item-need">From any reported number, every time. <strong>The minute someone asks "what makes up this number" and can't find out, trust erodes.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">23</span>Continuous controls monitoring</div><div class="item-need">Duplicate payments, vendor changes followed by payments, weekend transactions, just-below-threshold patterns. Detection without manual review.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">24</span>SOX evidence drawn from system data</div><div class="item-need">Not manually compiled. The audit evidence is the same data the system runs on.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Aerospace / Defense / Gov Contractor Extras</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">25</span>CAS compliance &amp; indirect rates</div><div class="item-need">Disclosure statement, pool/base structure, provisional vs. final rates, year-end true-up. Required for federal contracting.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">26</span>Allowable vs. unallowable cost segregation</div><div class="item-need">Per FAR Part 31, automated where possible. Without segregation, ICS submission becomes a multi-month project.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">27</span>Contract-type accounting</div><div class="item-need">FFP, T&amp;M, CPFF, CPIF — each with its own revenue recognition and billing rules. DCAA-ready audit trail.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">Three failures: <em>chart of accounts ages badly</em> (works at $50M, breaks at $500M); <em>close becomes performance art</em> (heroics instead of automation); <em>finance disconnected from operations</em> (different teams use different numbers from different systems).</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>Can someone give a confident answer to "how did Q3 go" before the books close on October 15?</li>
+        <li>When an auditor asks for a population of journals posted by VPs, can it be produced in 15 minutes?</li>
+        <li>When the CFO leaves, does the close still happen on schedule the next month?</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+</div>
+
+<!-- ============================================
+     DOMAIN 4: OPERATIONS
+     ============================================ -->
+<section class="domain" id="domain-ops">
+  <div class="domain-header">
+    <div class="domain-num">iv</div>
+    <div class="domain-title">
+      <h2>Operational Systems</h2>
+      <p>The tools the company actually works in every day — where conversation happens, where work gets tracked, where knowledge is captured or lost.</p>
+    </div>
+  </div>
+</section>
+
+<div class="app-grid">
+
+<!-- PROJECT MANAGEMENT -->
+<article class="app" id="pm">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">13 / PM &amp; DOCS</div>
+    <div class="app-title">
+      <h3>Project Management &amp; Documentation</h3>
+      <p class="app-job">Make work visible — what's being done, by whom, by when, why — and capture the knowledge generated along the way so it survives the people who created it.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Work Modeling</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Flexible work item types</div><div class="item-need">Task, subtask, milestone, issue, story, epic, risk, decision. Different teams need different schemas — one rigid task type doesn't fit them all.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Multi-level hierarchy</div><div class="item-need">Parent/child relationships so a deliverable rolls up into a phase rolls up into a portfolio. Without rollups, executive reporting is manual aggregation.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Cross-project dependencies</div><div class="item-need">Finish-to-start with lag/lead time, visualizable. Within and across projects — that's where critical paths actually live.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Custom fields at every level</div><div class="item-need">Every team tracks something the vendor didn't anticipate. If you can't add fields, the app ages badly.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">05</span>Workflow per work type</div><div class="item-need">Bugs flow differently from marketing campaigns differently from legal reviews. Configurable states with required fields per transition.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Views &amp; Planning</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Multiple view types</div><div class="item-need">List, board, calendar, timeline/Gantt, table. Different users think differently — same data, multiple lenses.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Custom saved views</div><div class="item-need">Per user, shareable, with own filters and groupings. "My work today" looks different for everyone.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Capacity / workload view</div><div class="item-need">Per person, per team, across projects, showing over-allocation. <strong>Without this, planning is wishful thinking.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Baselines &amp; snapshots</div><div class="item-need">Plan as of a point in time, so "how have we drifted since kickoff" is answerable.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Documentation Side</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Block-based real-time editor</div><div class="item-need">Multi-cursor, presence, no merge conflicts. Table stakes since Google Docs normalized it.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Version history with restore</div><div class="item-need">Every revision, with diff view. Catastrophic deletions become recoverable, not career-defining.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Templates for repeated content</div><div class="item-need">Meeting notes, RFCs, postmortems, runbooks. Reduces friction on documentation that should be standard.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">13</span>Backlinks &amp; references</div><div class="item-need">Every page that links to the current page. <strong>Turns docs into a knowledge graph instead of a hierarchy.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Federated search across both</div><div class="item-need">Work items and docs, full-text, with filters. <strong>Search is what determines whether documentation is asset or archive.</strong></div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Connection Layer</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">15</span>First-class links between docs &amp; work</div><div class="item-need">Mention a page from a task, mention a task from a page, with previews. The two halves should feel like one product.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Action items in docs become tasks</div><div class="item-need">Meeting notes produce real follow-ups, not buried bullet points that nobody owns.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">17</span>Embed live work lists in docs</div><div class="item-need">A project brief showing current milestone status without manual updates. Living documents instead of stale ones.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Memory of the Org</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">18</span>Decision log</div><div class="item-need">What was decided, by whom, when, with alternatives considered. <strong>Prevents "wait, why did we do it this way" six months later.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">19</span>Risk register per project</div><div class="item-need">Likelihood, impact, owner, mitigation, with portfolio rollup. Risks talked about become risks managed.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">20</span>AI-assisted Q&amp;A over content</div><div class="item-need">"What's the status of project X" answered with citations, not hallucinations. The biggest emerging differentiator if done honestly.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Workflow &amp; Integration</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">21</span>No-code automation</div><div class="item-need">Triggers, conditions, actions. Status changes, due dates, recurring work — without admin tickets.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">22</span>Forms for structured intake</div><div class="item-need">Replaces the "send me an email" pattern that loses information and routing context.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">23</span>Deep chat &amp; calendar integration</div><div class="item-need">Create items from chat, get updates in chat, deadlines on calendar. The work flows where the conversation happens.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">24</span>Source control integration</div><div class="item-need">Link commits, PRs, branches to work items. For engineering teams, indispensable for tracing what shipped to what was planned.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">Three failures: <em>tool sprawl that fragments knowledge</em> (Jira/Confluence/Notion/Slack with no single source); <em>process heaviness that drives users to shortcuts</em>; and <em>documentation exhaustive but stale</em> (pages from 3 years ago presented as current). "No doc" is sometimes better than "wrong doc."</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>Can someone joining the team find the current state of their project, by themselves, in an hour?</li>
+        <li>When a project finishes, does the knowledge survive — or live in someone's personal notes?</li>
+        <li>When a critical person leaves, can the team continue without a multi-week archaeology project?</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+<!-- INTERNAL CHAT -->
+<article class="app" id="chat">
+  <header class="app-header" onclick="toggleApp(this)">
+    <div class="app-id">14 / CHAT</div>
+    <div class="app-title">
+      <h3>Internal Chat &amp; Collaboration</h3>
+      <p class="app-job">Be where work conversation happens — fast enough to feel real-time, organized enough to find things later, secure enough that legal and IT don't ban it.</p>
+    </div>
+    <div class="app-toggle"></div>
+  </header>
+  <div class="app-body">
+
+    <div class="group">
+      <div class="group-label">Core Messaging</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">01</span>Channels with public/private</div><div class="item-need">Public for discoverability, private for sensitive work. <strong>The most important organizational primitive</strong> — bad channel structure is unrecoverable.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">02</span>Threads</div><div class="item-need">Replies that don't pollute the main channel. <strong>What separates chat that scales from chat that becomes unreadable noise.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">03</span>Mentions with notification rules</div><div class="item-need">@user, @channel, @here, @group with separate notification controls. Abuse of @channel is the fastest way to make a tool hated.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">04</span>Reactions</div><div class="item-need">Lightweight acknowledgment without adding messages. Reduces noise; allows acknowledgment without typing.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">05</span>Edit history visible</div><div class="item-need">So people can't silently rewrite what they said. Trust requires this.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Findability &amp; Knowledge</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">06</span>Search that works</div><div class="item-need">Full-text, with filters by sender, channel, date. <strong>People remember a phrase, not a date.</strong> Bad search means lost knowledge.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">07</span>Pinned messages &amp; canvases</div><div class="item-need">Lightweight wiki per channel for standing context. So new joiners don't re-ask questions.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">08</span>Saved messages / later</div><div class="item-need">Bookmark something to deal with after the meeting. The "I'll get to this" pattern, made reliable.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Focus &amp; Notifications</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">09</span>Granular notification controls</div><div class="item-need">Per channel, keyword, platform (desktop vs. mobile separately), time of day. <strong>Without this, users either drown or mute everything.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">10</span>Do-not-disturb &amp; focus modes</div><div class="item-need">Actually suppress notifications, scheduled for working hours and time zones. Respect for focused work.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">11</span>Status with calendar sync</div><div class="item-need">Custom text/emoji with expiration. "In a meeting until 3pm" updates automatically — sets honest expectations.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">12</span>Scheduled send</div><div class="item-need">Write now, deliver during recipient's working hours. Removes the "off-hours guilt" of cross-timezone teams.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Calls &amp; Async</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">13</span>Voice/video with screen share</div><div class="item-need">1:1 and group, with recording, transcription. The line between "chat" and "meeting" tools is gone.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">14</span>Async voice/video messages</div><div class="item-need">Short clips when typing isn't enough but a meeting is too much. Saves the calendar from low-stakes syncs.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Integration &amp; Automation</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">15</span>App / bot ecosystem</div><div class="item-need">Native or marketplace integrations with Jira, GitHub, Salesforce, Workday, calendar, identity. Where chat earns its place.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">16</span>Workflow / automation builder</div><div class="item-need">No-code triggers ("when 🐛 reaction, file Jira ticket"). Reduces friction on common patterns.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">17</span>SCIM provisioning from HRIS</div><div class="item-need">Joiners-movers-leavers handled automatically. <strong>The day-of-termination access test most tools fail quietly.</strong></div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">External &amp; Federation</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">18</span>External / guest access</div><div class="item-need">For vendors, customers, partners — with visual indication and explicit scope controls. Otherwise, externals end up in your main channels by accident.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">19</span>Federated channels</div><div class="item-need">Shared channels between two companies, each side owning users and retention. Rapidly becoming standard.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Security &amp; Governance</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">20</span>SSO, MFA, encryption with BYOK</div><div class="item-need">Customer-managed keys for regulated environments. Standard now, not optional.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">21</span>DLP for sensitive data</div><div class="item-need">Detect/block PII, source code, credentials, regulated data being shared inappropriately. Per-channel policies.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">22</span>Information barriers / ethical walls</div><div class="item-need">Prevent specific groups from messaging each other. Required in financial services, useful in M&amp;A and disputes.</div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-label">Compliance &amp; Retention</div>
+      <div class="items">
+        <div class="item"><div class="item-title"><span class="item-num">23</span>Retention policies per channel type</div><div class="item-need">Min and max, with legal hold override. Legal will demand this; designed-in beats bolted-on.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">24</span>eDiscovery &amp; export</div><div class="item-need">Search across all messages with appropriate authorization, defensible export with metadata. <strong>The day legal asks for "every message between two people over six months" — the test most tools fail.</strong></div></div>
+        <div class="item"><div class="item-title"><span class="item-num">25</span>Compliance archiving</div><div class="item-need">Continuous export to Smarsh, Global Relay, Microsoft Purview for FINRA/SEC/HIPAA-regulated environments.</div></div>
+        <div class="item"><div class="item-title"><span class="item-num">26</span>Data residency</div><div class="item-need">Storage region with controls extending to backups and DR. Increasingly a procurement gate.</div></div>
+      </div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-label">The Trap</div>
+      <div class="trap-content">Two failures: <em>channel sprawl with no governance</em> (every project spawns five channels, half abandoned, search returns thirty stale results — unusable archaeology after eighteen months); and <em>notification overload</em> (when every message is urgent, no message is urgent, important communication moves back to email or starts being missed). Neither is solved by features.</div>
+    </div>
+
+    <div class="test">
+      <div class="test-label">The Honest Test</div>
+      <ul>
+        <li>Can a new hire find the answer to a recurring question in search, or do they have to ask?</li>
+        <li>Does the tool make focused work easier or harder?</li>
+        <li>On termination day, does access disappear within the hour, including DMs and private channels?</li>
+      </ul>
+    </div>
+
+  </div>
+</article>
+
+</div>
+
+<!-- ============================================
+     PART II — COST LEDGER
+     ============================================ -->
+
+<!-- Part Divider -->
+<section class="part-divider" id="ledger">
+  <div class="part-divider-inner">
+    <div class="part-num">II</div>
+    <div class="part-title">
+      <h2>What it <em>costs</em> to buy what's already built.</h2>
+      <p>Every must-have on the previous pages is already shipping in commercial software. Here's the realistic license-only spend, by category, for a 100-person company buying the leading vendor in each.</p>
+    </div>
+    <div class="part-meta">
+      Pricing as of<strong>Q2 2026</strong>
+    </div>
+  </div>
+</section>
+
+<!-- Intro / Method -->
+<section class="ledger-intro">
+  <p class="ledger-lede">
+    If a single integrated platform replaced these fourteen apps, the savings line is the entire stack — <em>not</em> a row of it. This ledger shows the realistic annual cost a 100-person company pays for the leading commercial product in each category.
+  </p>
+  <div class="ledger-notes">
+    <p><strong>The realistic-team-size method.</strong> Most of these tools don't have 100 seats — a 100-person company has 5 SEO seats, 4 social media seats, and 100 chat seats. Each row uses a defensible team size for a 100-person mid-market company.</p>
+    <p><strong>Mid-market enterprise tier.</strong> Pricing reflects the tier a 100-person company would actually buy (Salesforce Enterprise, not Starter; Slack Business+, not Pro). All numbers are list-price annual; negotiated discounts of 10–30% are common but excluded here so totals don't undercount.</p>
+    <p><strong>License-only.</strong> Implementation, integration, training, admin headcount, and renewal increases are excluded. Real first-year totals are typically <strong>1.5–2× higher</strong> for systems like Workday, NetSuite, and Salesforce.</p>
+  </div>
+</section>
+
+<!-- Assumptions -->
+<section class="assumptions">
+  <div class="assumptions-inner">
+    <div class="assumptions-label">Working Assumptions</div>
+    <div class="assumptions-grid">
+      <div class="assumption"><strong>100 employees</strong>Mid-market US-based company; aerospace/defense flavor for context.</div>
+      <div class="assumption"><strong>Enterprise tiers</strong>SSO/MFA-required; SOC 2-compliant; compliance &amp; audit log baseline.</div>
+      <div class="assumption"><strong>Annual billing</strong>Annual prepay rates where published; discounts of 15–20% over monthly already applied.</div>
+      <div class="assumption"><strong>Commercial leaders</strong>Best-known vendor in each category; not necessarily the cheapest fit.</div>
+      <div class="assumption"><strong>List price</strong>Pre-negotiation; pre-volume discount; pre-multi-year commitment.</div>
+      <div class="assumption"><strong>License only</strong>Implementation, training, admin headcount excluded.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Ledger Table -->
+<section class="ledger-section">
+  <div class="ledger-title-block">
+    <h3 class="ledger-title-main">The Stack</h3>
+    <div class="ledger-sub">Replaceable Industry Apps · Annual Cost Per Category · Click any category to jump to its must-haves</div>
+  </div>
+
+  <table class="ledger-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Category</th>
+        <th>Leading Commercial App</th>
+        <th class="center col-users-h">Realistic Seats</th>
+        <th class="col-rate-h">List Rate</th>
+        <th class="right">Annual Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr>
+        <td class="col-num">01</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#crm">CRM</a></div>
+          <div class="cat-job">Customer system of record</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Salesforce Sales Cloud</div>
+          <div class="app-tier">Enterprise Edition</div>
+          <div class="app-alts">Alternatives: HubSpot Enterprise ($150/seat), Microsoft Dynamics 365 Sales</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">40</div>
+          <div class="user-note">Sales + Mktg</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$175 / user / mo</div>
+          <div class="rate-detail">$2,100/user/yr · annual prepay</div>
+        </td>
+        <td class="col-annual">$84,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">02</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#sales">Sales App</a></div>
+          <div class="cat-job">Rep cockpit / sales engagement</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Salesloft (or Outreach)</div>
+          <div class="app-tier">Advanced Plan</div>
+          <div class="app-alts">Bundled into many Salesforce expansions; standalone $125–$165/seat/mo</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">20</div>
+          <div class="user-note">Sales reps</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$140 / user / mo</div>
+          <div class="rate-detail">Mid-tier with cadences + AI</div>
+        </td>
+        <td class="col-annual">$33,600</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">03</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#bd">Business Development</a></div>
+          <div class="cat-job">Capture &amp; opportunity workflow</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Salesforce + GovWin / DealCloud</div>
+          <div class="app-tier">For aerospace BD context</div>
+          <div class="app-alts">DealCloud, Affinity, or capture-management add-ons</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">10</div>
+          <div class="user-note">BD team</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">~$200 / user / mo</div>
+          <div class="rate-detail">Capture/opportunity overlay</div>
+        </td>
+        <td class="col-annual">$24,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">04</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#social">Social Media</a></div>
+          <div class="cat-job">Calendar + content + listening</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Sprout Social</div>
+          <div class="app-tier">Advanced Plan</div>
+          <div class="app-alts">Hootsuite (~$249/seat), Sprinklr (custom enterprise, higher)</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">5</div>
+          <div class="user-note">Mktg team</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$399 / user / mo</div>
+          <div class="rate-detail">Annual; AI + listening</div>
+        </td>
+        <td class="col-annual">$23,940</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">05</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#analytics">Web Analytics</a></div>
+          <div class="cat-job">Behavior + attribution</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Adobe Analytics (or GA360)</div>
+          <div class="app-tier">Mid-market deployment</div>
+          <div class="app-alts">GA4 free; Mixpanel/Amplitude $40K–$100K enterprise</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">15</div>
+          <div class="user-note">Mktg + Eng</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">Custom contract</div>
+          <div class="rate-detail">Volume-based; ~$50K typical</div>
+        </td>
+        <td class="col-annual">$50,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">06</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#seo">SEO</a></div>
+          <div class="cat-job">Visibility + content + technical</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Semrush Business + Add-ons</div>
+          <div class="app-tier">Business + Trends + Local</div>
+          <div class="app-alts">Ahrefs Advanced ($449/mo); Conductor enterprise (higher)</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">5</div>
+          <div class="user-note">Shared license</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$700 / mo flat</div>
+          <div class="rate-detail">Plan-based, +$45/extra seat</div>
+        </td>
+        <td class="col-annual">$8,400</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">07</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#ta">Talent Acquisition</a></div>
+          <div class="cat-job">ATS + structured hiring</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Greenhouse</div>
+          <div class="app-tier">Plus Plan</div>
+          <div class="app-alts">Lever ($18K), Workday Recruiting (bundled with HCM), Ashby</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">100</div>
+          <div class="user-note">By headcount</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">Headcount-based</div>
+          <div class="rate-detail">~$200/employee/year typical</div>
+        </td>
+        <td class="col-annual">$25,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">08</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#hris">HRIS / HCM</a></div>
+          <div class="cat-job">System of record for employees</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Workday HCM</div>
+          <div class="app-tier">Workday Launch (mid-market)</div>
+          <div class="app-alts">Rippling ($35/EE), BambooHR ($15/EE), ADP Workforce Now</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">100</div>
+          <div class="user-note">All employees</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$80 / EE / mo</div>
+          <div class="rate-detail">Mid-market PEPM; HCM + Payroll</div>
+        </td>
+        <td class="col-annual">$96,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">09</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#culture">Culture / Recognition</a></div>
+          <div class="cat-job">Engagement, recognition, surveys</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Lattice + Bonusly</div>
+          <div class="app-tier">Performance + Recognition modules</div>
+          <div class="app-alts">Culture Amp, Achievers, Workhuman</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">100</div>
+          <div class="user-note">All employees</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$15 / EE / mo</div>
+          <div class="rate-detail">Combined platform spend</div>
+        </td>
+        <td class="col-annual">$18,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">10</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#legal">Corporate Legal / CLM</a></div>
+          <div class="cat-job">Contracts, matters, entities</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Ironclad</div>
+          <div class="app-tier">Professional Tier</div>
+          <div class="app-alts">LinkSquares ($45K), DocuSign CLM ($40K), Agiloft</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">15</div>
+          <div class="user-note">Volume-based</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">Custom contract</div>
+          <div class="rate-detail">Mid-market 5K-contract scope</div>
+        </td>
+        <td class="col-annual">$60,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">11</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#compliance">Compliance / GRC</a></div>
+          <div class="cat-job">Risk, controls, training, audits</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">OneTrust GRC (or LogicGate)</div>
+          <div class="app-tier">Enterprise GRC + Privacy</div>
+          <div class="app-alts">ServiceNow GRC, MetricStream, Vanta + Drata for SOC 2</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">10</div>
+          <div class="user-note">+ company-wide attestation</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">Custom contract</div>
+          <div class="rate-detail">Module-based; CMMC adds significantly</div>
+        </td>
+        <td class="col-annual">$75,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">12</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#finance">Corporate Finance / ERP</a></div>
+          <div class="cat-job">GL, AP/AR, close, reporting</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">NetSuite ERP</div>
+          <div class="app-tier">Mid-Market SuiteSuccess</div>
+          <div class="app-alts">Sage Intacct ($35K), Microsoft Dynamics 365 F&amp;O (higher)</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">25</div>
+          <div class="user-note">25 full + 75 self-serve</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$129–$199 / user / mo</div>
+          <div class="rate-detail">+ $999/mo base + module add-ons</div>
+        </td>
+        <td class="col-annual">$72,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">13</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#pm">PM &amp; Documentation</a></div>
+          <div class="cat-job">Tasks, projects, knowledge base</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Atlassian (Jira + Confluence)</div>
+          <div class="app-tier">Premium tier</div>
+          <div class="app-alts">Asana Enterprise ($25), Monday Enterprise ($20), Notion Business ($18)</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">100</div>
+          <div class="user-note">Most employees</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$22 / user / mo</div>
+          <div class="rate-detail">Jira Premium + Confluence Premium combined</div>
+        </td>
+        <td class="col-annual">$26,400</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">14</td>
+        <td class="col-cat">
+          <div class="cat-name"><a href="#chat">Internal Chat</a></div>
+          <div class="cat-job">Conversation + collaboration</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Slack Enterprise+</div>
+          <div class="app-tier">Enterprise Grid (Enterprise+)</div>
+          <div class="app-alts">Microsoft Teams (bundled in M365 E3 ~$36/user/mo)</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">100</div>
+          <div class="user-note">All employees</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$35 / user / mo</div>
+          <div class="rate-detail">Enterprise+ list rate</div>
+        </td>
+        <td class="col-annual">$42,000</td>
+      </tr>
+
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2" class="total-label">Total Annual SaaS Spend</td>
+        <td colspan="3" class="total-label" style="text-align:right;">14 apps · 100-person company · license only</td>
+        <td class="total-amount">
+          <em>$ USD / year</em>
+          $638,340
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</section>
+
+<!-- Summary Cards -->
+<section class="summary-section">
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-label">Per Employee, Per Year</div>
+      <div class="summary-num">$<em>6,383</em></div>
+      <div class="summary-text">License-only software spend per employee. Industry benchmarks for mid-market SaaS run $5,000–$10,000 per employee — this is squarely in range.</div>
+    </div>
+
+    <div class="summary-card feature">
+      <div class="summary-label">First-Year Real Cost</div>
+      <div class="summary-num">~$<em>1.0M</em></div>
+      <div class="summary-text">Once you add implementation (typically 1–2× annual license for Workday/NetSuite/Salesforce), integrations, training, and an admin or two, the first-year true cost lands between $900K and $1.2M.</div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-label">Five-Year Cost</div>
+      <div class="summary-num">$<em>3.7M+</em></div>
+      <div class="summary-text">Assuming 7% annual increases (typical) and stable headcount. Headcount growth or a single tier upgrade pushes this past $5M.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Caveats -->
+<section class="caveats-section">
+  <div class="caveats">
+    <div class="caveats-label">Honest Caveats</div>
+    <h3>This number is right for the wrong reasons — and wrong for the right ones.</h3>
+    <div class="caveats-list">
+      <p><strong>Most companies don't actually buy all of these.</strong> Many run on Salesforce + HubSpot + Slack + Workday + Asana and call it a day. Skipping the dedicated SEO, CLM, GRC, and recognition tools cuts the number by 25–35%.</p>
+
+      <p><strong>Implementation isn't priced here.</strong> Workday, NetSuite, and Salesforce implementations run 100–200% of annual license in year one. Real first-year for this stack is closer to <strong>$1.0–1.2M</strong>, not $638K.</p>
+
+      <p><strong>Negotiation is real.</strong> List price is the start. A 100-person company committing to multi-year contracts typically lands 15–25% below list. Apply that and the realistic license-only run-rate is <strong>~$510K/year</strong>.</p>
+
+      <p><strong>Bundled platforms blur categories.</strong> Workday HCM bundles Greenhouse-equivalent recruiting; Salesforce bundles Slack; Microsoft 365 bundles Teams. Some categories are already consolidated upstream.</p>
+
+      <p><strong>The "free" tier is a trap.</strong> GA4 is free; the cost is the engineer hours fixing tracking. NetSuite includes "free" reporting; the cost is the consultant who builds the reports. Hidden labor cost on top of license is real.</p>
+
+      <p><strong>Aerospace/defense premium.</strong> ITAR/CMMC/FedRAMP-compliant tiers are typically <strong>20–40% more expensive</strong>, and not every vendor offers them. The defense premium adds another $100–150K to a stack like this.</p>
+
+      <p><strong>Renewal increases compound.</strong> SaaS renewals routinely come in at 7–15% YoY without a price-cap clause. Five years of compounding turns a $638K stack into ~$900K by year five even with stable headcount.</p>
+
+      <p><strong>"Replace" rarely means 1:1 replacement.</strong> A unified platform doesn't have to match Workday's depth in payroll or NetSuite's depth in revenue recognition to be useful. The honest comparison is "replaces 80% of the value at 30% of the cost," not feature parity.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     FOOTER
+     ============================================ -->
+<footer class="footer">
+  <div class="footer-credit">
+    A <strong>field reference</strong> for product evaluation, RFP scoping, and internal toolbuilding —<br>
+    paired with a <strong>cost ledger</strong> for the conversation about what to build vs. what to buy.<br>
+    Pricing compiled from vendor pricing pages, Vendr / SpendHound / G2 / Capterra benchmarks, and procurement disclosures.
+  </div>
+  <div class="footer-mark">
+    Compiled · v2.0 · Q2 2026
+  </div>
+</footer>
+
+</div>
+
+<script>
+  // Toggle app open/closed
+  function toggleApp(header) {
+    const app = header.parentElement;
+    const isOpen = app.classList.contains('open');
+
+    if (isOpen) {
+      app.classList.remove('open');
+    } else {
+      app.classList.add('open');
+    }
+  }
+
+  // Open all apps when search has content; close when cleared
+  const searchInput = document.getElementById('search');
+  const allApps = document.querySelectorAll('.app');
+  const allItems = document.querySelectorAll('.item');
+
+  searchInput.addEventListener('input', function(e) {
+    const q = e.target.value.toLowerCase().trim();
+
+    if (q.length === 0) {
+      // Reset
+      allItems.forEach(item => {
+        item.classList.remove('match', 'dim');
+      });
+      return;
+    }
+
+    if (q.length < 2) return;
+
+    // Open all apps so matches are visible
+    allApps.forEach(app => app.classList.add('open'));
+
+    // Highlight matches
+    allItems.forEach(item => {
+      const text = item.textContent.toLowerCase();
+      if (text.includes(q)) {
+        item.classList.add('match');
+        item.classList.remove('dim');
+      } else {
+        item.classList.add('dim');
+        item.classList.remove('match');
+      }
+    });
+  });
+
+  // Allow Escape to clear search
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      e.target.value = '';
+      e.target.dispatchEvent(new Event('input'));
+      e.target.blur();
+    }
+  });
+
+  // Open the first app on load to show structure
+  document.addEventListener('DOMContentLoaded', () => {
+    const firstApp = document.querySelector('.app');
+    if (firstApp) firstApp.classList.add('open');
+  });
+
+  // Click on quicknav: open the target app
+  document.querySelectorAll('.quicknav a').forEach(link => {
+    link.addEventListener('click', () => {
+      const targetId = link.getAttribute('href').substring(1);
+      const target = document.getElementById(targetId);
+      if (target && target.classList.contains('app')) {
+        target.classList.add('open');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

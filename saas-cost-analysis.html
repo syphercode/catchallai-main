@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Consolidation Case — Annual SaaS Spend for a 100-Person Company</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=JetBrains+Mono:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3ede2;
+    --bg-card: #faf6ec;
+    --bg-deep: #ebe3d2;
+    --ink: #1a1f36;
+    --ink-soft: #4a5068;
+    --ink-muted: #7a7568;
+    --accent: #b8232f;
+    --accent-deep: #8b1a23;
+    --accent-warm: #d4691f;
+    --green: #2d5e3e;
+    --rule: #c9bfa8;
+    --rule-soft: #d8cfb8;
+    --highlight: #fff8e6;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Manrope', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(184, 35, 47, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 100%, rgba(212, 105, 31, 0.04) 0%, transparent 50%);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.2 0 0 0 0.04 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.55;
+    mix-blend-mode: multiply;
+  }
+
+  .wrap { position: relative; z-index: 2; max-width: 1280px; margin: 0 auto; padding: 60px 32px 80px; }
+
+  /* ============== HEADER ============== */
+  .doc-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: end;
+    padding-bottom: 32px;
+    margin-bottom: 56px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .doc-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .doc-eyebrow::before {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .doc-header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(40px, 5.5vw, 72px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    max-width: 18ch;
+  }
+
+  .doc-header h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 300;
+  }
+
+  .doc-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  .doc-meta strong {
+    color: var(--ink);
+    display: block;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    margin-top: 4px;
+  }
+
+  /* ============== INTRO ============== */
+  .intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 64px;
+  }
+
+  .intro-lede {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    line-height: 1.45;
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  .intro-lede em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .intro-notes {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+
+  .intro-notes p {
+    margin-bottom: 12px;
+  }
+
+  .intro-notes strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ============== ASSUMPTIONS ============== */
+  .assumptions {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    padding: 28px 32px;
+    margin-bottom: 64px;
+  }
+
+  .assumptions-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .assumptions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .assumption {
+    color: var(--ink-soft);
+  }
+
+  .assumption strong {
+    display: block;
+    color: var(--ink);
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  /* ============== LEDGER TABLE ============== */
+  .ledger {
+    margin-bottom: 64px;
+  }
+
+  .ledger-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 32px;
+    letter-spacing: -0.015em;
+    margin-bottom: 8px;
+  }
+
+  .ledger-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 32px;
+  }
+
+  .ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+  }
+
+  .ledger-table thead th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    padding: 16px 20px;
+    text-align: left;
+    background: var(--bg-deep);
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .ledger-table thead th.right { text-align: right; }
+  .ledger-table thead th.center { text-align: center; }
+
+  .ledger-table tbody tr {
+    border-bottom: 1px solid var(--rule-soft);
+    transition: background 0.15s;
+  }
+
+  .ledger-table tbody tr:hover { background: var(--highlight); }
+  .ledger-table tbody tr:last-child { border-bottom: 2px solid var(--ink); }
+
+  .ledger-table td {
+    padding: 18px 20px;
+    vertical-align: top;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .ledger-table td.col-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    width: 36px;
+    padding-top: 22px;
+    letter-spacing: 0.05em;
+  }
+
+  .ledger-table td.col-cat {
+    width: 14%;
+  }
+
+  .cat-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.2;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .cat-job {
+    font-size: 11px;
+    color: var(--ink-muted);
+    line-height: 1.4;
+    font-style: italic;
+  }
+
+  .ledger-table td.col-app {
+    width: 28%;
+  }
+
+  .app-name {
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+
+  .app-tier {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent-deep);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .app-alts {
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-top: 6px;
+    line-height: 1.45;
+  }
+
+  .ledger-table td.col-users {
+    width: 14%;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .user-count {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .user-note {
+    font-size: 10px;
+    color: var(--ink-muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .ledger-table td.col-rate {
+    width: 16%;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .rate-amount {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .rate-detail {
+    font-size: 10px;
+    color: var(--ink-muted);
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+  }
+
+  .ledger-table td.col-annual {
+    width: 14%;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    padding-top: 22px;
+  }
+
+  /* TOTAL ROW */
+  .ledger-table tfoot tr {
+    background: var(--ink);
+  }
+
+  .ledger-table tfoot td {
+    color: var(--bg);
+    padding: 24px 20px;
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .ledger-table tfoot td.total-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--bg-card);
+  }
+
+  .ledger-table tfoot td.total-amount {
+    text-align: right;
+    font-size: 32px;
+    font-weight: 600;
+    font-family: 'Fraunces', serif;
+    color: var(--bg);
+  }
+
+  .ledger-table tfoot td.total-amount em {
+    color: #f0a4a8;
+    font-style: normal;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* ============== SUMMARY BLOCK ============== */
+  .summary {
+    margin-top: 64px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
+
+  .summary-card {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    padding: 32px 28px;
+    position: relative;
+  }
+
+  .summary-card.feature {
+    background: linear-gradient(135deg, var(--ink) 0%, #2a3151 100%);
+    color: var(--bg);
+    border: none;
+  }
+
+  .summary-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+
+  .summary-card.feature .summary-label {
+    color: #c9a4a8;
+  }
+
+  .summary-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  .summary-card.feature .summary-num {
+    color: var(--bg);
+  }
+
+  .summary-num em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .summary-card.feature .summary-num em {
+    color: #f0a4a8;
+  }
+
+  .summary-card .summary-text {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .summary-card.feature .summary-text {
+    color: rgba(243, 237, 226, 0.85);
+  }
+
+  /* ============== CAVEATS ============== */
+  .caveats {
+    margin-top: 64px;
+    padding: 32px;
+    background: linear-gradient(135deg, rgba(184, 35, 47, 0.05), rgba(212, 105, 31, 0.04));
+    border: 1px solid rgba(184, 35, 47, 0.18);
+    border-left: 4px solid var(--accent);
+  }
+
+  .caveats-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .caveats-label::before {
+    content: '!';
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Fraunces', serif;
+  }
+
+  .caveats h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+
+  .caveats-list {
+    columns: 2;
+    column-gap: 40px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+
+  .caveats-list p {
+    margin-bottom: 14px;
+    break-inside: avoid;
+  }
+
+  .caveats-list strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ============== FOOTER ============== */
+  .doc-footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: end;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .doc-footer-credit {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  /* ============== RESPONSIVE ============== */
+  @media (max-width: 980px) {
+    .ledger-table thead th.col-rate-h,
+    .ledger-table td.col-rate { display: none; }
+    .ledger-table td.col-app { width: 35%; }
+    .summary { grid-template-columns: 1fr; }
+    .caveats-list { columns: 1; }
+    .intro { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 700px) {
+    .wrap { padding: 32px 16px 60px; }
+    .doc-header { grid-template-columns: 1fr; gap: 16px; }
+    .doc-meta { text-align: left; }
+    .doc-header h1 { font-size: 36px; }
+    .ledger-table { display: block; overflow-x: auto; }
+    .ledger-table thead th.col-users-h,
+    .ledger-table td.col-users { display: none; }
+    .ledger-table td { padding: 14px 12px; font-size: 13px; }
+    .cat-name { font-size: 14px; }
+    .ledger-table td.col-annual { font-size: 14px; padding-top: 14px; }
+    .ledger-table tfoot td.total-amount { font-size: 22px; }
+  }
+
+  @media print {
+    body { background: white; }
+    body::before { display: none; }
+    .ledger-table tbody tr:hover { background: transparent; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<!-- ============== HEADER ============== -->
+<header class="doc-header">
+  <div>
+    <div class="doc-eyebrow">Annual SaaS Spend Analysis · Companion to "Must-Haves"</div>
+    <h1>What 14 apps cost a <em>100-person company</em> — every year, forever.</h1>
+  </div>
+  <div class="doc-meta">
+    Pricing as of<strong>Q2 2026</strong>
+  </div>
+</header>
+
+<!-- ============== INTRO ============== -->
+<section class="intro">
+  <p class="intro-lede">
+    If a single integrated platform replaced these fourteen apps, the savings line is the entire stack — <em>not</em> a row of it. This ledger shows the realistic annual cost a 100-person company pays for the leading commercial product in each category.
+  </p>
+  <div class="intro-notes">
+    <p><strong>The realistic-team-size method.</strong> Most of these tools don't have 100 seats — a 100-person company has 5 SEO seats, 4 social media seats, and 100 chat seats. Each row uses a defensible team size for a 100-person mid-market company.</p>
+    <p><strong>Mid-market enterprise tier.</strong> Pricing reflects the tier a 100-person company would actually buy (Salesforce Enterprise, not Starter; Slack Business+, not Pro). All numbers are list-price annual; negotiated discounts of 10–30% are common but excluded here so totals don't undercount.</p>
+    <p><strong>License-only.</strong> Implementation, integration, training, admin headcount, and renewal increases are excluded. Real first-year totals are typically <strong>1.5–2× higher</strong> for systems like Workday, NetSuite, and Salesforce.</p>
+  </div>
+</section>
+
+<!-- ============== ASSUMPTIONS ============== -->
+<section class="assumptions">
+  <div class="assumptions-label">Working Assumptions</div>
+  <div class="assumptions-grid">
+    <div class="assumption"><strong>100 employees</strong>Mid-market US-based company; aerospace/defense flavor for context.</div>
+    <div class="assumption"><strong>Enterprise tiers</strong>SSO/MFA-required; SOC 2-compliant; compliance &amp; audit log baseline.</div>
+    <div class="assumption"><strong>Annual billing</strong>Annual prepay rates where published; discounts of 15–20% over monthly already applied.</div>
+    <div class="assumption"><strong>Commercial leaders</strong>Best-known vendor in each category; not necessarily the cheapest fit.</div>
+    <div class="assumption"><strong>List price</strong>Pre-negotiation; pre-volume discount; pre-multi-year commitment.</div>
+    <div class="assumption"><strong>License only</strong>Implementation, training, admin headcount excluded.</div>
+  </div>
+</section>
+
+<!-- ============== LEDGER ============== -->
+<section class="ledger">
+  <h2 class="ledger-title">The Stack</h2>
+  <div class="ledger-sub">Replaceable Industry Apps · Annual Cost Per Category</div>
+
+  <table class="ledger-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Category</th>
+        <th>Leading Commercial App</th>
+        <th class="center col-users-h">Realistic Seats</th>
+        <th class="col-rate-h">List Rate</th>
+        <th class="right">Annual Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr>
+        <td class="col-num">01</td>
+        <td class="col-cat">
+          <div class="cat-name">CRM</div>
+          <div class="cat-job">Customer system of record</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Salesforce Sales Cloud</div>
+          <div class="app-tier">Enterprise Edition</div>
+          <div class="app-alts">Alternatives: HubSpot Enterprise ($150/seat), Microsoft Dynamics 365 Sales</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">40</div>
+          <div class="user-note">Sales + Mktg</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$175 / user / mo</div>
+          <div class="rate-detail">$2,100/user/yr · annual prepay</div>
+        </td>
+        <td class="col-annual">$84,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">02</td>
+        <td class="col-cat">
+          <div class="cat-name">Sales App</div>
+          <div class="cat-job">Rep cockpit / sales engagement</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Salesloft (or Outreach)</div>
+          <div class="app-tier">Advanced Plan</div>
+          <div class="app-alts">Bundled into many Salesforce expansions; standalone $125–$165/seat/mo</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">20</div>
+          <div class="user-note">Sales reps</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$140 / user / mo</div>
+          <div class="rate-detail">Mid-tier with cadences + AI</div>
+        </td>
+        <td class="col-annual">$33,600</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">03</td>
+        <td class="col-cat">
+          <div class="cat-name">Business Development</div>
+          <div class="cat-job">Capture &amp; opportunity workflow</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Salesforce + GovWin / DealCloud</div>
+          <div class="app-tier">For aerospace BD context</div>
+          <div class="app-alts">DealCloud, Affinity, or capture-management add-ons</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">10</div>
+          <div class="user-note">BD team</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">~$200 / user / mo</div>
+          <div class="rate-detail">Capture/opportunity overlay</div>
+        </td>
+        <td class="col-annual">$24,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">04</td>
+        <td class="col-cat">
+          <div class="cat-name">Social Media</div>
+          <div class="cat-job">Calendar + content + listening</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Sprout Social</div>
+          <div class="app-tier">Advanced Plan</div>
+          <div class="app-alts">Hootsuite (~$249/seat), Sprinklr (custom enterprise, higher)</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">5</div>
+          <div class="user-note">Mktg team</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$399 / user / mo</div>
+          <div class="rate-detail">Annual; AI + listening</div>
+        </td>
+        <td class="col-annual">$23,940</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">05</td>
+        <td class="col-cat">
+          <div class="cat-name">Web Analytics</div>
+          <div class="cat-job">Behavior + attribution</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Adobe Analytics (or GA360)</div>
+          <div class="app-tier">Mid-market deployment</div>
+          <div class="app-alts">GA4 free; Mixpanel/Amplitude $40K–$100K enterprise</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">15</div>
+          <div class="user-note">Mktg + Eng</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">Custom contract</div>
+          <div class="rate-detail">Volume-based; ~$50K typical</div>
+        </td>
+        <td class="col-annual">$50,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">06</td>
+        <td class="col-cat">
+          <div class="cat-name">SEO</div>
+          <div class="cat-job">Visibility + content + technical</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Semrush Business + Add-ons</div>
+          <div class="app-tier">Business + Trends + Local</div>
+          <div class="app-alts">Ahrefs Advanced ($449/mo); Conductor enterprise (higher)</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">5</div>
+          <div class="user-note">Shared license</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$700 / mo flat</div>
+          <div class="rate-detail">Plan-based, +$45/extra seat</div>
+        </td>
+        <td class="col-annual">$8,400</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">07</td>
+        <td class="col-cat">
+          <div class="cat-name">Talent Acquisition</div>
+          <div class="cat-job">ATS + structured hiring</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Greenhouse</div>
+          <div class="app-tier">Plus Plan</div>
+          <div class="app-alts">Lever ($18K), Workday Recruiting (bundled with HCM), Ashby</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">100</div>
+          <div class="user-note">By headcount</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">Headcount-based</div>
+          <div class="rate-detail">~$200/employee/year typical</div>
+        </td>
+        <td class="col-annual">$25,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">08</td>
+        <td class="col-cat">
+          <div class="cat-name">HRIS / HCM</div>
+          <div class="cat-job">System of record for employees</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Workday HCM</div>
+          <div class="app-tier">Workday Launch (mid-market)</div>
+          <div class="app-alts">Rippling ($35/EE), BambooHR ($15/EE), ADP Workforce Now</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">100</div>
+          <div class="user-note">All employees</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$80 / EE / mo</div>
+          <div class="rate-detail">Mid-market PEPM; HCM + Payroll</div>
+        </td>
+        <td class="col-annual">$96,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">09</td>
+        <td class="col-cat">
+          <div class="cat-name">Culture / Recognition</div>
+          <div class="cat-job">Engagement, recognition, surveys</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Lattice + Bonusly</div>
+          <div class="app-tier">Performance + Recognition modules</div>
+          <div class="app-alts">Culture Amp, Achievers, Workhuman</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">100</div>
+          <div class="user-note">All employees</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$15 / EE / mo</div>
+          <div class="rate-detail">Combined platform spend</div>
+        </td>
+        <td class="col-annual">$18,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">10</td>
+        <td class="col-cat">
+          <div class="cat-name">Corporate Legal / CLM</div>
+          <div class="cat-job">Contracts, matters, entities</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Ironclad</div>
+          <div class="app-tier">Professional Tier</div>
+          <div class="app-alts">LinkSquares ($45K), DocuSign CLM ($40K), Agiloft</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">15</div>
+          <div class="user-note">Volume-based</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">Custom contract</div>
+          <div class="rate-detail">Mid-market 5K-contract scope</div>
+        </td>
+        <td class="col-annual">$60,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">11</td>
+        <td class="col-cat">
+          <div class="cat-name">Compliance / GRC</div>
+          <div class="cat-job">Risk, controls, training, audits</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">OneTrust GRC (or LogicGate)</div>
+          <div class="app-tier">Enterprise GRC + Privacy</div>
+          <div class="app-alts">ServiceNow GRC, MetricStream, Vanta + Drata for SOC 2</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">10</div>
+          <div class="user-note">+ company-wide attestation</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">Custom contract</div>
+          <div class="rate-detail">Module-based; CMMC adds significantly</div>
+        </td>
+        <td class="col-annual">$75,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">12</td>
+        <td class="col-cat">
+          <div class="cat-name">Corporate Finance / ERP</div>
+          <div class="cat-job">GL, AP/AR, close, reporting</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">NetSuite ERP</div>
+          <div class="app-tier">Mid-Market SuiteSuccess</div>
+          <div class="app-alts">Sage Intacct ($35K), Microsoft Dynamics 365 F&amp;O (higher)</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">25</div>
+          <div class="user-note">25 full + 75 self-serve</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$129–$199 / user / mo</div>
+          <div class="rate-detail">+ $999/mo base + module add-ons</div>
+        </td>
+        <td class="col-annual">$72,000</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">13</td>
+        <td class="col-cat">
+          <div class="cat-name">PM &amp; Documentation</div>
+          <div class="cat-job">Tasks, projects, knowledge base</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Atlassian (Jira + Confluence)</div>
+          <div class="app-tier">Premium tier</div>
+          <div class="app-alts">Asana Enterprise ($25), Monday Enterprise ($20), Notion Business ($18)</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">100</div>
+          <div class="user-note">Most employees</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$22 / user / mo</div>
+          <div class="rate-detail">Jira Premium + Confluence Premium combined</div>
+        </td>
+        <td class="col-annual">$26,400</td>
+      </tr>
+
+      <tr>
+        <td class="col-num">14</td>
+        <td class="col-cat">
+          <div class="cat-name">Internal Chat</div>
+          <div class="cat-job">Conversation + collaboration</div>
+        </td>
+        <td class="col-app">
+          <div class="app-name">Slack Enterprise+</div>
+          <div class="app-tier">Enterprise Grid (Enterprise+)</div>
+          <div class="app-alts">Microsoft Teams (bundled in M365 E3 ~$36/user/mo)</div>
+        </td>
+        <td class="col-users">
+          <div class="user-count">100</div>
+          <div class="user-note">All employees</div>
+        </td>
+        <td class="col-rate">
+          <div class="rate-amount">$35 / user / mo</div>
+          <div class="rate-detail">Enterprise+ list rate</div>
+        </td>
+        <td class="col-annual">$42,000</td>
+      </tr>
+
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2" class="total-label">Total Annual SaaS Spend</td>
+        <td colspan="3" class="total-label" style="text-align:right;">14 apps · 100-person company · license only</td>
+        <td class="total-amount">
+          <em>$ USD / year</em>
+          $638,340
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</section>
+
+<!-- ============== SUMMARY CARDS ============== -->
+<section class="summary">
+  <div class="summary-card">
+    <div class="summary-label">Per Employee, Per Year</div>
+    <div class="summary-num">$<em>6,383</em></div>
+    <div class="summary-text">License-only software spend per employee. Industry benchmarks for mid-market SaaS run $5,000–$10,000 per employee — this is squarely in range.</div>
+  </div>
+
+  <div class="summary-card feature">
+    <div class="summary-label">First-Year Real Cost</div>
+    <div class="summary-num">~$<em>1.0M</em></div>
+    <div class="summary-text">Once you add implementation (typically 1–2× annual license for Workday/NetSuite/Salesforce), integrations, training, and an admin or two, the first-year true cost lands between $900K and $1.2M.</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-label">Five-Year Cost</div>
+    <div class="summary-num">$<em>3.7M+</em></div>
+    <div class="summary-text">Assuming 7% annual increases (typical) and stable headcount. Headcount growth or a single tier upgrade pushes this past $5M.</div>
+  </div>
+</section>
+
+<!-- ============== CAVEATS ============== -->
+<section class="caveats">
+  <div class="caveats-label">Honest Caveats</div>
+  <h3>This number is right for the wrong reasons — and wrong for the right ones.</h3>
+  <div class="caveats-list">
+    <p><strong>Most companies don't actually buy all of these.</strong> Many run on Salesforce + HubSpot + Slack + Workday + Asana and call it a day. Skipping the dedicated SEO, CLM, GRC, and recognition tools cuts the number by 25–35%.</p>
+
+    <p><strong>Implementation isn't priced here.</strong> Workday, NetSuite, and Salesforce implementations run 100–200% of annual license in year one. Real first-year for this stack is closer to <strong>$1.0–1.2M</strong>, not $638K.</p>
+
+    <p><strong>Negotiation is real.</strong> List price is the start. A 100-person company committing to multi-year contracts typically lands 15–25% below list. Apply that and the realistic license-only run-rate is <strong>~$510K/year</strong>.</p>
+
+    <p><strong>Bundled platforms blur categories.</strong> Workday HCM bundles Greenhouse-equivalent recruiting; Salesforce bundles Slack; Microsoft 365 bundles Teams. Some categories are already consolidated upstream.</p>
+
+    <p><strong>The "free" tier is a trap.</strong> GA4 is free; the cost is the engineer hours fixing tracking. NetSuite includes "free" reporting; the cost is the consultant who builds the reports. Hidden labor cost on top of license is real.</p>
+
+    <p><strong>Aerospace/defense premium.</strong> ITAR/CMMC/FedRAMP-compliant tiers are typically <strong>20–40% more expensive</strong>, and not every vendor offers them. The defense premium adds another $100–150K to a stack like this.</p>
+
+    <p><strong>Renewal increases compound.</strong> SaaS renewals routinely come in at 7–15% YoY without a price-cap clause. Five years of compounding turns a $638K stack into ~$900K by year five even with stable headcount.</p>
+
+    <p><strong>"Replace" rarely means 1:1 replacement.</strong> A unified platform doesn't have to match Workday's depth in payroll or NetSuite's depth in revenue recognition to be useful. The honest comparison is "replaces 80% of the value at 30% of the cost," not feature parity.</p>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="doc-footer">
+  <div class="doc-footer-credit">
+    Pricing compiled from vendor pricing pages, Vendr / SpendHound / G2 / Capterra benchmarks, and procurement disclosures.<br>
+    Numbers represent <strong style="color:var(--ink); font-style: normal;">defensible mid-market list prices</strong> as of Q2 2026.
+  </div>
+  <div>Companion Doc · v1.0</div>
+</footer>
+
+</div>
+
+</body>
+</html>
